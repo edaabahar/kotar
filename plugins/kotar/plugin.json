@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "kotar",
+  "version": "0.9.0",
+  "description": "Set up Obsidian bug & enhancement boards in a project: audits missing files, creates them, asks before any worktree, commit or push.",
+  "author": { "name": "edaabahar" },
+  "repository": "https://github.com/edaabahar/kotar",
+  "license": "MIT"
+}

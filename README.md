@@ -38,3 +38,10 @@ claude plugin install kotar@kotar
 - Review script test: `node skills/kotar/scripts/review.test.mjs`.
 - Counter test: `node --experimental-strip-types hooks/count.test.mjs`.
 - Bump `version` in `.claude-plugin/plugin.json` for every release.
+
+## Codex
+A Codex port lives in `plugins/kotar` (only the setup skill; the full `/kotar` board needs Claude Code's side sessions).
+```
+codex plugin marketplace add edaabahar/kotar
+```
+Then ask Codex to run `$kotar-setup`.
