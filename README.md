@@ -5,6 +5,7 @@ Claude Code plugin: Obsidian task boards for any project. You say what is wrong 
 | Command | What it does |
 |---|---|
 | `/kotar <what to do>` | splits your text into items, decides for each whether it is a bug or an enhancement (asks when unsure), records notes, dispatches side sessions, merges finished branches |
+| `/kotar:setup` | audits the project for missing kotar files, creates them, fills placeholders; asks before any worktree, commit or push |
 | `/kotar` | re-reads the board and moves it forward ("check the board") |
 
 Bug: something that exists does not work as it should. Enhancement: something new, or a change to something that works as built; judged on five checks.
