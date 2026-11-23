@@ -273,6 +273,10 @@ The brief must stand alone:
 - first step, before any edit: `git reset --hard refs/heads/main` in the new worktree (it has no work yet), then confirm
   `git rev-parse HEAD` equals `git rev-parse refs/heads/main`. The app cuts worktrees from `origin/main`, and local
   `main` is never pushed, so without this the branch starts from an old commit and every merge needs a rebase;
+- task list: as its very first tool call, together with the `git reset`, call `mcp__ccd_turn__update_plan` with the Plan steps
+  (`scope: "first_task"`); then keep it current: `{"advance": true}` rides along with the call that starts each next step, and
+  before any command that may run longer than a minute, mark the finished steps done. The user watches this list, so it must
+  never lag behind the work;
 - the symptom or request, area and any **Guidance** text, and the note's full path (read only);
 - the **Plan** and **Files**, copied in full: stay inside the scope, follow the approach, reuse what it names. Do not
   widen the scope and do not go exploring the codebase beyond what the plan needs. If the work cannot be done inside
