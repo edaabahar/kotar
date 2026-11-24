@@ -62,9 +62,12 @@ assert.ok(log.every((l) => l.branch === 'work' && l.note === 'BUG-009'));
 assert.equal(log.find((l) => l.check === 'skipme').reason, 'flaky on CI');
 
 const hist = spawnSync(process.execPath, [script, '--history'], { cwd: dir, encoding: 'utf8' }).stdout;
-assert.match(hist, /^skipme: skipped 1, timeout 0, let through 0, broken 0, last \d{4}-\d\d-\d\d skipped: flaky on CI$/m);
-assert.match(hist, /^gone: skipped 0, timeout 0, let through 0, broken 1/m);
-assert.match(hist, /^ok: skipped 0, timeout 0, let through 0, broken 0$/m, 'a row the audit never saw');
+assert.match(hist, /^skipme: runs 0, caught 0, skipped 1, timeout 0, let through 0, broken 0, last \d{4}-\d\d-\d\d skipped: flaky on CI$/m);
+assert.match(hist, /^gone: runs 0, caught 0, skipped 0, timeout 0, let through 0, broken 1/m);
+assert.match(hist, /^bad: runs 1, caught 1, /m);
+assert.match(hist, /^ok: runs 1, caught 0, skipped 0, timeout 0, let through 0, broken 0$/m, 'a row the audit never saw');
+fs.writeFileSync(path.join(dir, '.git/kotar/stats.json'), JSON.stringify({ ok: { runs: 12, caught: 0 } }));
+assert.match(spawnSync(process.execPath, [script, '--history'], { cwd: dir, encoding: 'utf8' }).stdout, /^ok: runs 12, caught 0 \(never caught anything\)/m);
 
 const clean = spawnSync(process.execPath, [script], { cwd: dir, encoding: 'utf8', env: { ...process.env, KOTAR_CONFIG: path.join(dir, 'none.md') } });
 assert.equal(clean.status, 0);

@@ -5,7 +5,7 @@
 // appended to <git common dir>/kotar/audit.jsonl: never read into a brief, only when someone asks what was skipped.
 // A row whose command names a repo script that is gone is reported BROKEN (not run, audited).
 // node checks.mjs --history: per check, how often the audit saw it skipped, timed out, let through or broken
-// (the signals for retiring or narrowing a row).
+// (the signals for retiring or narrowing a row), and from stats.json how many runs it had and how many it caught.
 import fs from 'fs';
 import path from 'path';
 import { execFileSync, spawn, spawnSync } from 'child_process';
@@ -77,7 +77,21 @@ const auditFile = () => path.join(path.resolve(root, git('rev-parse', '--git-com
 export const missingScripts = (command, dir) =>
   (command.match(/(?<![\w/:.-])[\w.-]+(?:\/[\w.-]+)*\.(?:mjs|cjs|js|py|sh|gd|ps1)\b/g) || []).filter((f) => !fs.existsSync(path.join(dir, f)));
 
+// Per check: runs and catches (FAIL or WARN). Kept next to the audit; a row that never catches anything is a
+// candidate to retire. Counts only, never the run's output.
+const statsFile = () => path.join(path.dirname(auditFile()), 'stats.json');
+const readStats = () => (fs.existsSync(statsFile()) ? JSON.parse(fs.readFileSync(statsFile(), 'utf8')) : {});
+function count(name, caught) {
+  const stats = readStats();
+  const s = (stats[name] ||= { runs: 0, caught: 0 });
+  s.runs++;
+  if (caught) (s.caught++, (s.lastCaught = new Date().toISOString().slice(0, 10)));
+  fs.mkdirSync(path.dirname(statsFile()), { recursive: true });
+  fs.writeFileSync(statsFile(), JSON.stringify(stats, null, 1));
+}
+
 function history(checks) {
+  const stats = readStats();
   const file = auditFile();
   const recs = fs.existsSync(file) ? fs.readFileSync(file, 'utf8').trim().split('\n').filter(Boolean).map((l) => JSON.parse(l)) : [];
   const names = [...new Set([...checks.map((c) => c.name), ...recs.map((r) => r.check)])];
@@ -86,7 +100,9 @@ function history(checks) {
     const count = (st) => mine.filter((r) => r.status === st).length;
     const where = checks.some((c) => c.name === n) ? '' : '  (no longer a row)';
     const last = mine.at(-1);
-    console.log(`${n}: skipped ${count('skipped')}, timeout ${count('timeout')}, let through ${count('warn-failed')}, broken ${count('broken')}${last ? `, last ${last.at.slice(0, 10)} ${last.status}${last.reason ? ': ' + last.reason.slice(0, 80) : ''}` : ''}${where}`);
+    const st = stats[n] || { runs: 0, caught: 0 };
+    const idle = st.runs >= 10 && !st.caught ? ' (never caught anything)' : '';
+    console.log(`${n}: runs ${st.runs}, caught ${st.caught}${idle}, skipped ${count('skipped')}, timeout ${count('timeout')}, let through ${count('warn-failed')}, broken ${count('broken')}${last ? `, last ${last.at.slice(0, 10)} ${last.status}${last.reason ? ': ' + last.reason.slice(0, 80) : ''}` : ''}${where}`);
   }
 }
 
@@ -128,6 +144,7 @@ async function main() {
       console.log(`SLOW  ${c.name}: stopped at ${c.budget}s budget (not verified; the check is too big for a micro task)`);
       continue;
     }
+    count(c.name, r.status !== 0);
     if (r.status === 0) { console.log(`PASS  ${c.name} (${sec}s, ${files.length} files)`); continue; }
     const tail = `${r.stdout || ''}${r.stderr || ''}`.trim().split('\n').slice(-15).join('\n');
     if (c.mode === 'block') blocked = true;
