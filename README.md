@@ -32,7 +32,7 @@ Set `- Languages: gdscript` under `## Code graph` in `.claude/kotar.md` and the 
 who calls what, what a change touches and why a file changed (`graph_find`, `graph_class`, `graph_callers`, `graph_callees`,
 `graph_impact`, `graph_history`, `graph_note_add`). Each file gets a note in the notes folder (default `<board>/Kod`);
 everything above its `<!-- graph: -->` line is generated, the **Notlar** below it is the repo's own lessons and is kept.
-Languages live in `graph/lang/` (one adapter per language).
+Languages live in `graph/lang/` (one adapter per language): `gdscript` (.gd, .tscn), `python` (.py), `js` (.js .jsx .mjs .ts .tsx); list several, comma separated.
 
 Lessons: at merge, a bug's non-obvious root cause becomes one line in the Notlar of the class that holds it; each
 side session's brief gets `graph.mjs lessons <planned files>` (those lines and who uses the files), not whole rules docs.
@@ -54,7 +54,7 @@ claude plugin install kotar@kotar
 - To try it without installing: `claude --plugin-dir <path-to-your-clone>`.
 - List script test: `node skills/kotar/scripts/board_lists.test.mjs`.
 - Review script test: `node skills/kotar/scripts/review.test.mjs`.
-- Graph test: `node graph/graph.test.mjs`.
+- Graph tests: `node graph/graph.test.mjs`, `node graph/lang.test.mjs`.
 - Checks test: `node skills/kotar/scripts/checks.test.mjs`.
 - Counter test: `node --experimental-strip-types hooks/count.test.mjs`.
 - Bump `version` in `.claude-plugin/plugin.json` for every release.

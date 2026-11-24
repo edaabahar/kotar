@@ -5,8 +5,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import * as gdscript from "./lang/gdscript.mjs";
+import * as js from "./lang/js.mjs";
+import * as python from "./lang/python.mjs";
 
-const ADAPTERS = { gdscript };
+const ADAPTERS = { gdscript, python, js };
 const ID_RE = /\b(BUG|ENH)-\d+\b/g;
 
 function git(args, cwd = ROOT) {
@@ -114,9 +116,10 @@ export function buildGraph() {
   if (cached && cached.stamp === stamp) return cached.graph;
   const prev = cached?.graph;
 
-  const g = { nodes: {}, byFile: {}, scenes: {}, calls: [], uses: {}, possible: {}, defsByMethod: {}, global: {} };
+  const g = { nodes: {}, byFile: {}, scenes: {}, calls: [], uses: {}, possible: Object.create(null), defsByMethod: Object.create(null), global: {} };
+  const taken = new Set();
   for (const a of adapters()) {
-    const part = a.build(ROOT, files, { isTest });
+    const part = a.build(ROOT, files, { isTest, taken });
     for (const k of ["nodes", "byFile", "scenes", "possible", "defsByMethod", "global"]) Object.assign(g[k], part[k]);
     g.calls.push(...part.calls);
     for (const [k, set] of Object.entries(part.uses)) for (const v of set) (g.uses[k] ||= new Set()).add(v);
@@ -138,6 +141,10 @@ export function resolveSymbol(g, sym) {
   if (dot > 0) {
     const cls = g.nodes[sym.slice(0, dot)] ? sym.slice(0, dot) : g.global[sym.slice(0, dot)];
     if (cls) return { cls, member: sym.slice(dot + 1) };
+    // "Module.Class.method" (Python/JS methods, GDScript inner classes): the module, then the dotted member
+    const first = sym.indexOf(".");
+    const mod = g.nodes[sym.slice(0, first)];
+    if (mod?.funcs[sym.slice(first + 1)]) return { cls: mod.name, member: sym.slice(first + 1) };
   }
   const owners = Object.values(g.nodes).filter((n) => n.funcs[sym] || n.signals[sym]).map((n) => n.name);
   if (owners.length) return { member: sym, owners };
