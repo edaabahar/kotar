@@ -1,9 +1,10 @@
 // code-graph MCP server (stdio, newline-delimited JSON-RPC, no dependencies): the graph questions of
 // queries.mjs as tools, so agents ask who calls what, what a change touches and why a file changed.
-// Shipped with the kotar plugin (.mcp.json at the plugin root); the project's .claude/kotar.md "## Code graph" section
+// Shipped with the kotar plugin (mcpServers in .claude-plugin/plugin.json); the project's .claude/kotar.md "## Code graph" section
 // picks the languages. The graph is rebuilt from the working tree whenever a file changed.
 import readline from "node:readline";
 import { callees, callers, classInfo, find, history, impact, noteAdd } from "./queries.mjs";
+import { ROOT } from "./core.mjs";
 
 const str = (description) => ({ type: "string", description });
 const int = (description) => ({ type: "integer", description });
@@ -65,7 +66,7 @@ function handle(req) {
       protocolVersion: params?.protocolVersion || "2025-06-18",
       capabilities: { tools: {} },
       serverInfo: { name: "code-graph", version: "1.0.0" },
-      instructions: "Code graph of this repo (kotar). Before changing a class, read graph_class (its notes) and graph_impact; after a change with a non-obvious rule, add one line with graph_note_add.",
+      instructions: `Code graph of this repo (kotar), project root ${ROOT}. Before changing a class, read graph_class (its notes) and graph_impact; after a change with a non-obvious rule, add one line with graph_note_add.`,
     } });
   }
   if (method === "ping") return send({ id, result: {} });

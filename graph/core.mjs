@@ -17,10 +17,13 @@ function git(args, cwd = ROOT) {
   }
 }
 
-// The project: KOTAR_ROOT, else the git top level of CLAUDE_PROJECT_DIR (set for plugin MCP servers, whose cwd is
-// not documented), else of the working directory (the CLI). A worktree is its own root.
-const start = process.env.CLAUDE_PROJECT_DIR || process.cwd();
-export const ROOT = path.resolve(process.env.KOTAR_ROOT || git(["rev-parse", "--show-toplevel"], start).trim() || start);
+// The project: KOTAR_ROOT, else the git top level of the working directory (in a worktree session that is the
+// worktree; CLAUDE_PROJECT_DIR is the main checkout there), else of CLAUDE_PROJECT_DIR. A cwd inside the plugin
+// itself (CLAUDE_PLUGIN_ROOT) is not the project.
+const top = (dir) => (dir ? git(["rev-parse", "--show-toplevel"], dir).trim() : "");
+const inPlugin = (dir) => process.env.CLAUDE_PLUGIN_ROOT && path.resolve(dir).startsWith(path.resolve(process.env.CLAUDE_PLUGIN_ROOT));
+const fromCwd = inPlugin(process.cwd()) ? "" : top(process.cwd());
+export const ROOT = path.resolve(process.env.KOTAR_ROOT || fromCwd || top(process.env.CLAUDE_PROJECT_DIR) || process.env.CLAUDE_PROJECT_DIR || process.cwd());
 
 // `- Key: value` lines of .claude/kotar.md (backticks and <!-- comments --> stripped); graph keys under `## Code graph`.
 export function readConfig(root = ROOT) {
