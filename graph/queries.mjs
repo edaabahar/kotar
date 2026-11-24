@@ -165,3 +165,29 @@ export function noteAdd(name, text) {
   fs.appendFileSync(file, `- ${today}: ${line}\n`);
   return `Added to ${path.relative(ROOT, file)}`;
 }
+
+// Files that use the given files directly (one level, tests included): the contract side of a change, for checks.
+export function dependents(files) {
+  const g = buildGraph();
+  const out = new Set();
+  for (const f of files) for (const u of g.usedBy[g.byFile[f]] || []) out.add(g.nodes[u].file);
+  for (const f of files) out.delete(f);
+  return [...out].sort();
+}
+
+// The hand-written notes (lessons) of the given files and who uses them, for a side session's brief.
+export function lessons(files) {
+  const g = buildGraph();
+  const out = [];
+  for (const f of files) {
+    const name = g.byFile[f];
+    if (!name) continue;
+    const manual = readManualNotes(notePath(g, name));
+    const users = [...(g.usedBy[name] || [])].filter((u) => !g.nodes[u].isTest).sort();
+    if (!manual && !users.length) continue;
+    out.push(`${f} [${name}]`);
+    if (manual) out.push(...manual.split("\n").map((l) => "  " + l));
+    if (users.length) out.push(`  used by (${users.length}): ${cap(users, 15).join(", ")}`);
+  }
+  return out.length ? out.join("\n") : "No notes or users for these files.";
+}

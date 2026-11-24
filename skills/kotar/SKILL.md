@@ -20,6 +20,12 @@ Its sections fill in the gaps marked *(config)* below:
 - **Enhancement checks**: the five checks and their reference files, plus extra warning-only checks.
 - **Code graph** (optional): `Languages` turns on kotar's built-in graph (the `code-graph` MCP tools; per-file notes
   rebuilt with `/kotar:index`); otherwise a tool or command for callers and dependents of files (used only when planning, step 2b).
+  The per-file notes' **Notlar** are the repo's own lessons; kotar itself holds none.
+- **Checks** (optional): micro checks, one table row each: name, mode (`block` stops the merge, `warn` only
+  reports; the user picks), file globs, time budget in seconds, command (`{files}` = the matching files). They run
+  only on the changed files and the files that use them (`scripts/checks.mjs`).
+
+The graph CLI is `node <this skill's directory>/../../graph/graph.mjs` (called *graph CLI* below).
 
 If `.claude/kotar.md` is missing, this is the first run in this project: do **First run** below before anything else.
 
@@ -285,6 +291,11 @@ The brief must stand alone:
 - bug: find the root cause in this repo's code; add a regression test where the logic allows it;
 - enhancement: the **Evaluation** and the reference files to read (deviate only with a reason in the report); add tests for new logic;
 - grep every caller (or use the code graph) before changing shared code;
+- **Lessons** (only with **Code graph** `Languages`): run the graph CLI `lessons <every file in Files>` from the main
+  checkout and paste its output into the brief as it is: these traps apply to the files the session will change, and
+  "used by" names who must keep working. This replaces reading long rules docs for these files;
+- **Checks** *(config)*, when there are rows: before the final report, run `node <this skill's directory>/scripts/checks.mjs --note <ID>`
+  in the worktree; fix every `FAIL`; list `WARN` and `SLOW` lines in the report (a `SLOW` check was not verified);
 - every item in **Brief** *(config)*: project rules files, setup, tests, lint, docs, screenshots;
 - commit on the worktree branch; do not merge, push, or edit the board;
 - final report, short: the "Done when" items one by one (met / not met), any deviation from the plan and why, root cause (bug) or what changed (enhancement), test/build results, the branch name,
@@ -297,13 +308,19 @@ If a report asks a product question, put it in the note's **Guidance** and tell 
 Re-read **Guidance** first: a new instruction there goes back to the session instead of merging. Merge one branch at a time.
 
 1. Set `merge-pending`. Run `node <this skill's directory>/scripts/review.mjs "<note>" <branch>` from the main checkout
-   (before merging) and keep its output for step 4. Read the diff (`git diff main...refs/heads/<branch>`) and check it actually does what the
+   (before merging) and keep its output for step 4. With **Checks** rows, also run `node <this skill's directory>/scripts/checks.mjs --note <ID>`
+   with the branch's worktree as working directory (`git worktree list`): a `FAIL` goes back to the session like a failed
+   test. Skip a check only when the user says so for this note: `--skip <check>=<their reason>` (it is audited). Read the diff (`git diff main...refs/heads/<branch>`) and check it actually does what the
    note asks and stays in scope; a report is not proof. For an enhancement, re-check the five rules yourself; a
    failed check goes back to the session like a failed test.
 2. On main: `git merge --no-ff refs/heads/<branch>`. Resolve `docs/*` and plan/notes-file conflicts yourself. For a code conflict, abort and send it back to the session to rebase on main.
 3. Run every check in **Merge** *(config)*. If one fails, add 1 to the note's `retries`, `git reset --hard ORIG_HEAD` (only your own merge, which you just made) and send the failure back to the session.
 4. Set `status: done` and write **Result**: root cause or what changed, merge commit, the five checks' result
-   (enhancement), what the user should check. Then add a **Review** (below). Commit the board.
+   (enhancement), what the user should check. Then add a **Review** (below).
+   **Lesson** (bug, with **Code graph** `Languages`): when the root cause is a trap the code does not show, add one
+   line to the note of the class that holds it, on main: graph CLI `note <Class> "<trap>; <what to check> (<ID>)"`
+   (the board's language, max 240 chars). Not a changelog: skip it when the fix explains itself. Commit the board and
+   the notes folder.
 5. Go back to step 3 and start anything this unblocked.
 
 A note you cannot move forward gets `stuck` with the reason in **Result**.
@@ -322,6 +339,10 @@ the plan, planned files never touched) and the "Done when" items met or not. The
 | `stalled` | needed 2+ nudges | add the cause as a row in **Known stalls** *(config)* |
 | `merge-retried` | a merge check failed and went back | add the failing check or its cause to **Brief** *(config)* so sessions run it first |
 
+Checks lines: a `SLOW` check suggests a smaller command or a narrower glob; a `WARN` names what was let through.
+When the class's Notlar already held a line about the same trap before this lesson (it came back), propose a
+**Checks** row that would catch it, with a fast command and the mode left for the user to choose; add it only on a yes.
+
 Also name one thing that went well or that a later similar note should reuse (a helper, a commit, a test pattern):
 future plans find it in step 2b. When the same flag shows up in three `done` notes, propose the permanent fix
 (a **Brief** item, a **Known stalls** row, a shared-file entry) to the user in the report; add it only on a yes.
@@ -333,3 +354,6 @@ Reply briefly: each new note with its number and kind (and for an enhancement th
 notable points), what started, what is queued and on what, what merged, what the user must look at or decide.
 Put the extra-check warnings (rule gap and the config's extras) and the **Review** warnings and suggestions of what
 just merged in a separate **Warnings** part, so they are not missed. Offer to archive sessions only after their branches are merged, and only act on a yes.
+
+Skipped, timed-out and let-through checks are logged in `<git common dir>/kotar/audit.jsonl`. Do not read it for a
+brief or a report; read it only when the user asks what was skipped (filter by note or branch).

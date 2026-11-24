@@ -19,7 +19,8 @@ const started = Date.parse(field('started'));
 const finished = Date.parse(git('log', '-1', '--format=%cI', ref));
 const minutes = Number.isNaN(started) ? null : Math.max(0, Math.round((finished - started) / 60000));
 
-const planned = [...section('Files').matchAll(/`([^`]+)`/g)].map((m) => m[1]);
+// Dosyalar: boards that keep their notes in Turkish (pixy-dixy).
+const planned = [...(section('Files') || section('Dosyalar')).matchAll(/`([^`]+)`/g)].map((m) => m[1]);
 const touched = git('diff', '--name-only', `main...${ref}`).split('\n').filter(Boolean);
 const inPlan = (file) => planned.some((p) => file === p || file.startsWith(p.replace(/\/?$/, '/')));
 const outside = touched.filter((f) => !inPlan(f) && !f.startsWith('docs/'));

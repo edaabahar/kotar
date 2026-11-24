@@ -18,6 +18,16 @@ This file is the project's `.claude/kotar.md`. `/kotar` reads it first.
 <!-- Checks to run on main after a merge; if one fails the merge is undone -->
 - `<test command>`
 
+## Checks
+<!-- Optional micro checks on the changed files and the files that use them (code graph, one level). Mode: block
+     (a failure stops the merge) or warn (reported, audited). Budget in seconds: past it the check is stopped and
+     reported SLOW (not verified), so keep each one small. {files} = the matching files, quoted. Example rows:
+| lint | block | src/**/*.py | 30 | ruff check {files} |
+| no fixed px in HUD | warn | ui/hud/** | 5 | node tools/check_px.mjs {files} |
+-->
+| Check | Mode | Files | Budget | Command |
+|---|---|---|---|---|
+
 ## Known stalls
 | Seen | Sign | Cause | Fix to send |
 |---|---|---|---|

@@ -23,5 +23,10 @@ assert.deepEqual(out.outside, ['extra.js']);
 assert.deepEqual(out.untouched, ['lib/unused.js']);
 assert.deepEqual(out.flags, ['slow', 'scope-drift', 'stalled']);
 assert.equal(out.budget, 20);
+
+fs.writeFileSync(note, `---\nsize: S\nstarted: ${started}\n---\n# BUG-001 t\n\n## Dosyalar\n- \`src/\`\n- \`extra.js\`\n`); // a Turkish board
+const tr = JSON.parse(execFileSync('node', [fileURLToPath(new URL('review.mjs', import.meta.url)), note, 'work', repo], { encoding: 'utf8' }));
+assert.deepEqual(tr.planned, ['src/', 'extra.js']);
+assert.deepEqual(tr.outside, []);
 fs.rmSync(repo, { recursive: true, force: true });
 console.log('review ok');

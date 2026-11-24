@@ -2,7 +2,7 @@
 // node <kotar>/graph/graph.mjs <command> [args]   (run `help` for the list); the project is the git top level of the cwd.
 import { buildGraph } from "./core.mjs";
 import { writeAllNotes } from "./notes.mjs";
-import { callees, callers, classInfo, find, history, impact, noteAdd } from "./queries.mjs";
+import { callees, callers, classInfo, dependents, find, history, impact, lessons, noteAdd } from "./queries.mjs";
 
 const HELP = `node <kotar>/graph/graph.mjs <command>
   find <text>              classes, functions and signals whose name contains the text
@@ -11,6 +11,8 @@ const HELP = `node <kotar>/graph/graph.mjs <command>
   callees <Class.fn|fn>    what it calls and emits
   impact <Class|file> [depth]     what depends on it and which tests reference it
   history <Class|file|BUG-nnn|ENH-nnn>   commits of a class, or files a bug/enhancement changed
+  lessons <file...>        the Notlar of these files and who uses them (for a brief)
+  dependents <file...>     files that use these files directly, tests included (for checks)
   note <Class> <text>      add one short line to the class note's Notlar
   notes                    regenerate the Kod notes (run on main after merges)`;
 
@@ -22,6 +24,8 @@ const commands = {
   callees: () => callees(args[0]),
   impact: () => impact(args[0], Number(args[1]) || 3),
   history: () => history(args[0]),
+  lessons: () => lessons(args),
+  dependents: () => dependents(args).join("\n"),
   note: () => noteAdd(args[0], args.slice(1).join(" ")),
   notes: () => writeAllNotes(buildGraph()),
 };

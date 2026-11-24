@@ -33,6 +33,15 @@ who calls what, what a change touches and why a file changed (`graph_find`, `gra
 everything above its `<!-- graph: -->` line is generated, the **Notlar** below it is the repo's own lessons and is kept.
 Languages live in `graph/lang/` (one adapter per language).
 
+Lessons: at merge, a bug's non-obvious root cause becomes one line in the Notlar of the class that holds it; each
+side session's brief gets `graph.mjs lessons <planned files>` (those lines and who uses the files), not whole rules docs.
+
+## Checks (optional)
+Rows under `## Checks` in `.claude/kotar.md` (name, `block` or `warn`, file globs, budget in seconds, command with
+`{files}`) run with `skills/kotar/scripts/checks.mjs` on the changed files plus the files that use them (code graph,
+one level) — by the side session before it reports and by kotar before merging. Past its budget a check is stopped
+and reported `SLOW`. Skipped, timed-out and let-through checks go to `.git/kotar/audit.jsonl`, read only on request.
+
 ## Install (once, global)
 ```powershell
 claude plugin marketplace add edaabahar/kotar
@@ -45,5 +54,6 @@ claude plugin install kotar@kotar
 - List script test: `node skills/kotar/scripts/board_lists.test.mjs`.
 - Review script test: `node skills/kotar/scripts/review.test.mjs`.
 - Graph test: `node graph/graph.test.mjs`.
+- Checks test: `node skills/kotar/scripts/checks.test.mjs`.
 - Counter test: `node --experimental-strip-types hooks/count.test.mjs`.
 - Bump `version` in `.claude-plugin/plugin.json` for every release.
