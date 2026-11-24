@@ -23,7 +23,13 @@ This file is the project's `.claude/kotar.md`. `/kotar` reads it first.
 |---|---|---|---|
 
 ## Code graph
-<!-- Optional: the tool or command planning uses for callers/dependents of files (e.g. a GitNexus query). Empty: plain Grep. -->
+<!-- Optional. Languages turns on kotar's built-in graph (MCP tools graph_find, graph_class, graph_callers, graph_impact,
+     graph_history, graph_note_add; notes per file in Notes folder, rebuilt with /kotar:index). Known: gdscript.
+     Without Languages, name another tool here (e.g. a GitNexus query), or leave it empty for plain Grep. -->
+- Languages: <!-- e.g. gdscript -->
+- Notes folder: <!-- default: <board folder>/Kod -->
+- Skip: <!-- folders left out, e.g. addons/, .godot/ -->
+- Tests: <!-- test folders, e.g. test/ -->
 
 ## Enhancement checks
 <!-- Left empty, the plugin's default five checks apply -->

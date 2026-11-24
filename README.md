@@ -7,6 +7,7 @@ Claude Code plugin: Obsidian task boards for any project. You say what is wrong 
 | `/kotar <what to do>` | splits your text into items, decides for each whether it is a bug or an enhancement (asks when unsure), records notes, dispatches side sessions, merges finished branches |
 | `/kotar:setup` | audits the project for missing kotar files, creates them, fills placeholders; asks before any worktree, commit or push |
 | `/kotar` | re-reads the board and moves it forward ("check the board") |
+| `/kotar:index` | rebuilds the code graph notes (one Obsidian note per file; hand-written **Notlar** kept) |
 
 Bug: something that exists does not work as it should. Enhancement: something new, or a change to something that works as built; judged on five checks.
 
@@ -25,6 +26,13 @@ The first `/kotar` in a project sets up the board:
 3. `templates/vault/` is copied to the board folder and `templates/kotar.md` to the project's `.claude/kotar.md` (existing files are never overwritten), then both are committed.
 4. You fill the `<...>` placeholders in `.claude/kotar.md` (test command, shared files, checks).
 
+## Code graph (optional)
+Set `- Languages: gdscript` under `## Code graph` in `.claude/kotar.md` and the plugin's `code-graph` MCP server answers
+who calls what, what a change touches and why a file changed (`graph_find`, `graph_class`, `graph_callers`, `graph_callees`,
+`graph_impact`, `graph_history`, `graph_note_add`). Each file gets a note in the notes folder (default `<board>/Kod`);
+everything above its `<!-- graph: -->` line is generated, the **Notlar** below it is the repo's own lessons and is kept.
+Languages live in `graph/lang/` (one adapter per language).
+
 ## Install (once, global)
 ```powershell
 claude plugin marketplace add edaabahar/kotar
@@ -36,5 +44,6 @@ claude plugin install kotar@kotar
 - To try it without installing: `claude --plugin-dir <path-to-your-clone>`.
 - List script test: `node skills/kotar/scripts/board_lists.test.mjs`.
 - Review script test: `node skills/kotar/scripts/review.test.mjs`.
+- Graph test: `node graph/graph.test.mjs`.
 - Counter test: `node --experimental-strip-types hooks/count.test.mjs`.
 - Bump `version` in `.claude-plugin/plugin.json` for every release.

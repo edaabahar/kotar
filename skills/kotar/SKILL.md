@@ -18,7 +18,8 @@ Its sections fill in the gaps marked *(config)* below:
 - **Merge**: checks to run on main after a merge, and what to do when they fail.
 - **Known stalls**: known stalls (sign → fix), used by step 0b.
 - **Enhancement checks**: the five checks and their reference files, plus extra warning-only checks.
-- **Code graph** (optional): a tool or command for callers and dependents of files (used only when planning, step 2b).
+- **Code graph** (optional): `Languages` turns on kotar's built-in graph (the `code-graph` MCP tools; per-file notes
+  rebuilt with `/kotar:index`); otherwise a tool or command for callers and dependents of files (used only when planning, step 2b).
 
 If `.claude/kotar.md` is missing, this is the first run in this project: do **First run** below before anything else.
 
