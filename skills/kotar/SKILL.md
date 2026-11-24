@@ -343,6 +343,15 @@ Checks lines: a `SLOW` check suggests a smaller command or a narrower glob; a `W
 When the class's Notlar already held a line about the same trap before this lesson (it came back), propose a
 **Checks** row that would catch it, with a fast command and the mode left for the user to choose; add it only on a yes.
 
+**Rules this change may retire.** Rules go stale when the code or the needs move on; every merge looks for them:
+- run the graph CLI `stale <changed files>`: a lesson whose script or named code is gone is a candidate;
+- read the Notlar of the changed files against the diff: a lesson that describes the behaviour this change replaced
+  (an enhancement that redesigns the thing, a decision the user changed) is a candidate, to delete or reword;
+- a `BROKEN` checks line (its script is gone) is a candidate row, and so is any **Brief**, **Known stalls** or **Checks**
+  item that names what the change removed.
+Put candidates in **Warnings** with the reason, one line each; delete or reword only on the user's yes, and say why in
+the commit message (`Board: retire <rule>: <why>`), so git keeps the record. Never retire a rule on your own.
+
 Also name one thing that went well or that a later similar note should reuse (a helper, a commit, a test pattern):
 future plans find it in step 2b. When the same flag shows up in three `done` notes, propose the permanent fix
 (a **Brief** item, a **Known stalls** row, a shared-file entry) to the user in the report; add it only on a yes.
@@ -356,4 +365,5 @@ Put the extra-check warnings (rule gap and the config's extras) and the **Review
 just merged in a separate **Warnings** part, so they are not missed. Offer to archive sessions only after their branches are merged, and only act on a yes.
 
 Skipped, timed-out and let-through checks are logged in `<git common dir>/kotar/audit.jsonl`. Do not read it for a
-brief or a report; read it only when the user asks what was skipped (filter by note or branch).
+brief or a report; read it only when the user asks what was skipped (filter by note or branch), or when pruning
+rules (`/kotar:lessons` *Retire*, which reads it through `checks.mjs --history`).

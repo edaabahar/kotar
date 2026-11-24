@@ -2,8 +2,9 @@
 // The CLI (graph.mjs) and the MCP server (mcp_server.mjs) print these strings as they are.
 import fs from "node:fs";
 import path from "node:path";
-import { buildGraph, resolveSymbol, ROOT } from "./core.mjs";
-import { notePath, readManualNotes, writeClassNote } from "./notes.mjs";
+import { buildGraph, CONFIG, notesDir, resolveSymbol, ROOT } from "./core.mjs";
+import { execFileSync } from "node:child_process";
+import { notePath, readManualNotes, walk, writeClassNote } from "./notes.mjs";
 
 const LIMIT = 40;
 const cap = (list, n = LIMIT) => (list.length > n ? [...list.slice(0, n), `... +${list.length - n} more`] : list);
@@ -190,4 +191,54 @@ export function lessons(files) {
     if (users.length) out.push(`  used by (${users.length}): ${cap(users, 15).join(", ")}`);
   }
   return out.length ? out.join("\n") : "No notes or users for these files.";
+}
+
+// Code names a lesson mentions: `backticked` spans, snake_case, CamelCase, CONST_CASE and file names.
+const CODE_EXT = /\.(gd|tscn|tres|py|js|jsx|mjs|ts|tsx|json|csv|cfg|godot|toml|ya?ml|sh|css|html)$/;
+export function lessonNames(text) {
+  const body = text.replace(/^-\s*\d{4}-\d{2}-\d{2}:\s*/, "").replace(/^(?:BUG|ENH)-[\d/,\s]+(?:(?:BUG|ENH)-[\d/]+[,\s]*)*:\s*/, "");
+  const out = new Set();
+  // \p{L}: a Turkish word (ihtiyaç) stays one plain word instead of leaving a fragment that looks like code
+  for (const m of body.matchAll(/[\p{L}\d_./*<>-]+/gu)) {
+    const t = m[0].replace(/^[./-]+|[.,;:/-]+$/g, "");
+    if (!t || /[*<>]/.test(t)) continue; // a pattern (stat_run_*.json, houseDogs_<ad>), not a name
+    // a file name stays whole; "mouse_entered/exited" and "PictureBox.fit" are several names
+    for (const p of CODE_EXT.test(t) ? [t] : t.split(/[/.]/)) {
+      const code = CODE_EXT.test(p) || (/_/.test(p) && /[a-z]/i.test(p) && p.length > 3 && !/_$/.test(p)) || /^[A-Z][a-z0-9]+[A-Z][\w]*$/.test(p);
+      if (code && /^[\w./-]+$/.test(p) && !/^\d|^(BUG|ENH)-/.test(p)) out.add(p);
+    }
+  }
+  return [...out];
+}
+
+// Lessons that may have gone stale: their script is gone, or a code name they rely on is nowhere in the repo's code
+// any more. A hint for a person or kotar to judge (an engine API the repo never calls also shows), never a delete.
+export function stale(files = []) {
+  const g = buildGraph();
+  const tracked = execFileSync("git", ["ls-files"], { cwd: ROOT, encoding: "utf8", maxBuffer: 1 << 28 }).split("\n").filter(Boolean);
+  const skip = [CONFIG.notes, CONFIG.board].filter(Boolean).map((d) => d.replace(/\/?$/, "/"));
+  let corpus = "";
+  for (const f of tracked) {
+    if (!CODE_EXT.test(f) || skip.some((d) => f.startsWith(d)) || !fs.existsSync(path.join(ROOT, f))) continue;
+    if (fs.statSync(path.join(ROOT, f)).size < 2e6) corpus += fs.readFileSync(path.join(ROOT, f), "utf8") + "\n";
+  }
+  const stems = new Set(tracked.map((f) => path.posix.basename(f).replace(/\.[^.]+$/, ""))); // test names: picture_box_test
+  const exists = (t) => (CODE_EXT.test(t) ? tracked.some((f) => f === t || f.endsWith("/" + t)) : corpus.includes(t) || stems.has(t) || [...stems].some((s) => s.startsWith(t + "_")));
+  const notes = files.length
+    ? files.map((f) => g.byFile[f] && notePath(g, g.byFile[f])).filter(Boolean)
+    : walk(notesDir());
+  const out = [];
+  let count = 0;
+  for (const file of notes) {
+    if (!fs.existsSync(file)) continue;
+    const kod = fs.readFileSync(file, "utf8").match(/^kod: (.+)$/m)?.[1].trim();
+    const lines = readManualNotes(file).split("\n").filter((l) => l.startsWith("- "));
+    const gone = kod && !fs.existsSync(path.join(ROOT, kod));
+    const hits = lines.map((l) => ({ l, missing: gone ? [`script gone: ${kod}`] : lessonNames(l).filter((t) => !exists(t)) })).filter((h) => h.missing.length);
+    if (!hits.length) continue;
+    count += hits.length;
+    out.push(`${path.relative(ROOT, file).replaceAll("\\", "/")}${kod ? `  (${kod})` : ""}`);
+    for (const h of hits) out.push(`  ${h.l.slice(0, 160)}`, `    not found: ${h.missing.join(", ")}`);
+  }
+  return count ? `${count} lesson(s) may be stale:\n${out.join("\n")}` : "No stale lessons found.";
 }

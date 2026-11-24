@@ -3,6 +3,9 @@
 // Usage (cwd: the branch's worktree): node checks.mjs [--base main] [--note BUG-001] [--skip <check>=<reason>]...
 // Prints one line per check; exits 1 when a `block` check fails. Skipped, timed-out and failed `warn` checks are
 // appended to <git common dir>/kotar/audit.jsonl: never read into a brief, only when someone asks what was skipped.
+// A row whose command names a repo script that is gone is reported BROKEN (not run, audited).
+// node checks.mjs --history: per check, how often the audit saw it skipped, timed out, let through or broken
+// (the signals for retiring or narrowing a row).
 import fs from 'fs';
 import path from 'path';
 import { execFileSync, spawn, spawnSync } from 'child_process';
@@ -68,8 +71,27 @@ function run(cmd, budget) {
   });
 }
 
+const auditFile = () => path.join(path.resolve(root, git('rev-parse', '--git-common-dir')), 'kotar', 'audit.jsonl');
+
+// Repo scripts a command runs ("node tools/checks/x.mjs {files}") that no longer exist.
+export const missingScripts = (command, dir) =>
+  (command.match(/(?<![\w/:.-])[\w.-]+(?:\/[\w.-]+)*\.(?:mjs|cjs|js|py|sh|gd|ps1)\b/g) || []).filter((f) => !fs.existsSync(path.join(dir, f)));
+
+function history(checks) {
+  const file = auditFile();
+  const recs = fs.existsSync(file) ? fs.readFileSync(file, 'utf8').trim().split('\n').filter(Boolean).map((l) => JSON.parse(l)) : [];
+  const names = [...new Set([...checks.map((c) => c.name), ...recs.map((r) => r.check)])];
+  for (const n of names) {
+    const mine = recs.filter((r) => r.check === n);
+    const count = (st) => mine.filter((r) => r.status === st).length;
+    const where = checks.some((c) => c.name === n) ? '' : '  (no longer a row)';
+    const last = mine.at(-1);
+    console.log(`${n}: skipped ${count('skipped')}, timeout ${count('timeout')}, let through ${count('warn-failed')}, broken ${count('broken')}${last ? `, last ${last.at.slice(0, 10)} ${last.status}${last.reason ? ': ' + last.reason.slice(0, 80) : ''}` : ''}${where}`);
+  }
+}
+
 function audit(rec) {
-  const dir = path.join(path.resolve(root, git('rev-parse', '--git-common-dir')), 'kotar');
+  const dir = path.dirname(auditFile());
   fs.mkdirSync(dir, { recursive: true });
   fs.appendFileSync(path.join(dir, 'audit.jsonl'), JSON.stringify({ at: new Date().toISOString(), branch: git('branch', '--show-current'), note: noteId, ...rec }) + '\n');
 }
@@ -78,6 +100,7 @@ async function main() {
   const cfg = process.env.KOTAR_CONFIG || path.join(root, '.claude/kotar.md'); // KOTAR_CONFIG: tests
   const checks = parseChecks(fs.existsSync(cfg) ? fs.readFileSync(cfg, 'utf8') : '');
   if (!checks.length) return console.log('No "## Checks" rows in .claude/kotar.md: nothing to run.');
+  if (argv.includes('--history')) return history(checks);
   const s = await withUsers(scope());
   console.log(`scope: ${s.changed.length} changed, ${s.users.length} users of them`);
   let blocked = false;
@@ -88,6 +111,12 @@ async function main() {
     if (c.name in skips) {
       audit({ ...rec, status: 'skipped', reason: skips[c.name] || 'no reason given' });
       console.log(`SKIP  ${c.name}: ${skips[c.name] || 'no reason given'}`);
+      continue;
+    }
+    const gone = missingScripts(c.command, root);
+    if (gone.length) {
+      audit({ ...rec, status: 'broken', reason: `${gone.join(', ')} is gone` });
+      console.log(`BROKEN ${c.name}: ${gone.join(', ')} is gone (not run; fix or retire this row)`);
       continue;
     }
     const cmd = c.command.includes('{files}') ? c.command.replaceAll('{files}', files.map((f) => `"${f}"`).join(' ')) : c.command;

@@ -37,6 +37,10 @@ Languages live in `graph/lang/` (one adapter per language): `gdscript` (.gd, .ts
 Lessons: at merge, a bug's non-obvious root cause becomes one line in the Notlar of the class that holds it; each
 side session's brief gets `graph.mjs lessons <planned files>` (those lines and who uses the files), not whole rules docs.
 
+Rules also retire: every merge looks for lessons whose code is gone (`graph.mjs stale`) or that the change made
+untrue, and for check rows that are broken or keep being skipped (`checks.mjs --history`); `/kotar:lessons` prunes
+all of them on request. Nothing is removed without your yes, and the commit message keeps the reason.
+
 ## Checks (optional)
 Rows under `## Checks` in `.claude/kotar.md` (name, `block` or `warn`, file globs, budget in seconds, command with
 `{files}`) run with `skills/kotar/scripts/checks.mjs` on the changed files plus the files that use them (code graph,

@@ -1,6 +1,6 @@
 ---
 name: lessons
-description: The repo's own lessons (the Notlar lines of its code graph notes) - show them for files, backfill them from done bug notes, and spot traps that keep coming back as candidate checks. Use for "/kotar:lessons", "lessons for <file>", "backfill lessons", "extract lessons from old bugs", "which traps keep coming back".
+description: The repo's own lessons (the Notlar lines of its code graph notes) - show them for files, backfill them from done bug notes, retire the ones new needs made stale (lessons, checks, brief items), and spot traps that keep coming back as candidate checks. Use for "/kotar:lessons", "lessons for <file>", "backfill lessons", "extract lessons from old bugs", "prune lessons", "which rules are stale", "which traps keep coming back".
 ---
 
 # Kotar lessons
@@ -25,6 +25,19 @@ Run the graph CLI `lessons <files...>` and give its output as it is.
    their removals and edits.
 4. On main (never a worktree), add each line with the graph CLI `note <file> "<ids>: <lesson>"`. Commit the notes
    folder with the **Board** commit command.
+
+## Retire (`prune lessons`, `which rules are stale`, or every few weeks of merges)
+Rules that new needs made wrong or that point at code that is gone cost every brief context and mislead it.
+1. Lessons: run the graph CLI `stale` (all notes). For each candidate, open the named code (or its git log) and judge:
+   gone or renamed (reword to the new name, or delete when the trap went with it), still true but names an engine or
+   library API the repo never calls (keep), or contradicted by a later decision or enhancement (delete).
+2. Checks: run `node <this skill's directory>/../kotar/scripts/checks.mjs --history` in the main checkout. A row that is
+   `broken`, skipped again and again, or timed out again and again is a candidate (fix its command, narrow it, or drop
+   it); so is a row whose trap no lesson or bug mentions any more.
+3. **Brief** and **Known stalls** items in `.claude/kotar.md` that name a tool, file or flake that is gone are candidates.
+4. Show the user the candidates with the reason for each (and the evidence: the missing name, the audit counts).
+   Change nothing before a yes. On a yes, delete or reword the line, and commit with the reason in the message
+   (`Board: retire <rule>: <why>`); git history is the record of what was retired and why.
 
 ## Recurring traps
 A family with lessons from three or more bug ids is a trap that keeps coming back. For each, propose one fast
