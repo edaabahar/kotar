@@ -147,6 +147,8 @@ export function writeAllNotes(g) {
     if (g.byFile[kod] && !g.nodes[g.byFile[kod]].isTest) {
       fs.rmSync(file); // renamed class: its notes moved to the new note above
       removed++;
+    } else if (manual && g.byFile[kod]) {
+      continue; // a test script's note made by noteAdd: tests get no generated part, its lessons stay as they are
     } else if (manual) {
       kept.push(path.relative(ROOT, file)); // script gone, hand-written notes stay for a person to move
     } else {

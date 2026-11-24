@@ -45,5 +45,8 @@ assert.match(note, /keep me/, "hand-written notes survive regeneration");
 assert.equal(note.match(/<!-- graph:/g).length, 1);
 assert.match(q.noteAdd("Box", "a trap"), /Added/);
 assert.match(q.classInfo("Box"), /a trap/);
+assert.match(q.noteAdd("test/box_test.gd", "a test trap"), /Added/);
+assert.doesNotMatch(notes.writeAllNotes(core.buildGraph()), /notes kept/, "a test note with lessons is kept quietly");
+assert.match(fs.readFileSync(path.join(dir, "vault/Kod/test/box_test.md"), "utf8"), /a test trap/);
 fs.rmSync(dir, { recursive: true, force: true });
 console.log("graph tests passed");
