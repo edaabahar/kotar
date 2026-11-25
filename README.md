@@ -41,6 +41,13 @@ Rules also retire: every merge looks for lessons whose code is gone (`graph.mjs 
 untrue, and for check rows that are broken or keep being skipped (`checks.mjs --history`); `/kotar:lessons` prunes
 all of them on request. Nothing is removed without your yes, and the commit message keeps the reason.
 
+## Principles (optional)
+An area note can hold the subject's laws, theories and hypotheses under `## Principles`, one line each (`law:`,
+`theory:`, `hypothesis:`). Planning names which bind a note and follows them; the brief carries them; the report and
+the merge check the result against them (a broken law goes back like a failed test, an unexplained deviation from a
+theory is a warning); each task adds evidence for or against the hypotheses it tests, and `principles.mjs --status`
+proposes promoting or dropping them. A domain law the work rests on but the area lacks is proposed for adding.
+
 ## Checks (optional)
 Rows under `## Checks` in `.claude/kotar.md` (name, `block` or `warn`, file globs, budget in seconds, command with
 `{files}`) run with `skills/kotar/scripts/checks.mjs` on the changed files plus the files that use them (code graph,
@@ -60,5 +67,6 @@ claude plugin install kotar@kotar
 - Review script test: `node skills/kotar/scripts/review.test.mjs`.
 - Graph tests: `node graph/graph.test.mjs`, `node graph/lang.test.mjs`.
 - Checks test: `node skills/kotar/scripts/checks.test.mjs`.
+- Principles test: `node skills/kotar/scripts/principles.test.mjs`.
 - Counter test: `node --experimental-strip-types hooks/count.test.mjs`.
 - Bump `version` in `.claude-plugin/plugin.json` for every release.

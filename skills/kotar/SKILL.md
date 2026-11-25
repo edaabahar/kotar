@@ -61,6 +61,14 @@ open/done lists in both board notes and the `Board.canvas` overview. Never edit 
 Only the main checkout edits the board; side sessions never touch it. After each board change, commit only
 the board from the main checkout *(config: Board, message style)*, so unrelated work is never swept in.
 
+**Principles.** Each area note may hold the subject's laws, theories and hypotheses under `## Principles`
+(`## İlkeler`; keys `law`/`yasa`, `theory`/`teori`, `hypothesis`/`hipotez`), one line each. A **law** must hold: work
+that breaks one goes back like a failed test. A **theory** explains and predicts: plans follow it, and a deviation needs
+a reason. A **hypothesis** is believed but unproven: every task that touches it adds evidence (`for:` / `against:`
+note ids). `node <this skill's directory>/scripts/principles.mjs "<areas folder>" <area>` prints an area's principles
+(the areas folder is `Areas/` in the board, or the board's own, e.g. `Alanlar/`); `--status` lists every hypothesis
+with its evidence and whether to promote or drop it. They belong to the repo, like lessons; kotar holds none.
+
 Argument: free text with one or more items. Empty argument means skip step 2.
 Invoking `/kotar` is the user's standing approval to start side sessions for these items, to merge their
 branches into local `main` and to commit the board. It does not cover `git push`; never push.
@@ -251,7 +259,14 @@ and does not re-plan. Spend a few minutes, not an investigation:
    - *Risks*: shared files, data or saves that could break, callers of shared code;
    - `size`: `S` (one place, under ~20 min), `M` (a few files, ~1 h), `L` (cross-cutting, ~2 h).
      An `L` is split into several notes chained with `blockedBy`, each `S` or `M`, unless it cannot be split (say why).
-3. If prior art shows the item is already done or nearly so, say so in **Plan** and tell the user instead of building it again.
+3. **Principles.** Run `principles.mjs` for the note's area. The *Approach* must keep every law and follow the
+   theories that apply; name them in the plan (one line: which ones bind this work). A deviation from a theory is
+   written into the plan with its reason, never left for the session to discover. If the work tests a hypothesis,
+   say which and what result would count as evidence for or against. If the work rests on a law or theory of the
+   subject that the area does not record yet (a domain rule such as a projection or perspective law, colour theory,
+   a UX law, an engine guarantee, a physical or statistical law), name it in the plan and propose adding it to the
+   area note; add it only on the user's yes.
+4. If prior art shows the item is already done or nearly so, say so in **Plan** and tell the user instead of building it again.
 
 ## 3. Decide what can start
 
@@ -294,12 +309,17 @@ The brief must stand alone:
 - **Lessons** (only with **Code graph** `Languages`): run the graph CLI `lessons <every file in Files>` from the main
   checkout and paste its output into the brief as it is: these traps apply to the files the session will change, and
   "used by" names who must keep working. This replaces reading long rules docs for these files;
+- **Principles**: paste `principles.mjs`'s output for the note's area as it is, with the plan's line on which bind
+  this work: laws are hard constraints, theories guide the approach (deviate only with a reason in the report), and a
+  hypothesis the plan names gets evidence: say whether the result supports or contradicts it;
 - **Checks** *(config)*, when there are rows: before the final report, run `node <this skill's directory>/scripts/checks.mjs --note <ID>`
   in the worktree; fix every `FAIL`; list `WARN` and `SLOW` lines in the report (a `SLOW` check was not verified);
 - every item in **Brief** *(config)*: project rules files, setup, tests, lint, docs, screenshots;
 - commit on the worktree branch; do not merge, push, or edit the board;
 - final report, short: the "Done when" items one by one (met / not met), any deviation from the plan and why, root cause (bug) or what changed (enhancement), test/build results, the branch name,
-  what only a person can verify; for an enhancement also the five checks redone on the result (one line each) and the extra checks.
+  what only a person can verify; for an enhancement also the five checks redone on the result (one line each) and the extra checks;
+  the principles that bind it, one line each: law kept / broken, theory followed / deviated (why), hypothesis
+  supported / contradicted / not tested (with the measurement).
 
 If a report asks a product question, put it in the note's **Guidance** and tell the user; answer factual ones yourself with `SendMessage`.
 
@@ -312,7 +332,9 @@ Re-read **Guidance** first: a new instruction there goes back to the session ins
    with the branch's worktree as working directory (`git worktree list`): a `FAIL` goes back to the session like a failed
    test. Skip a check only when the user says so for this note: `--skip <check>=<their reason>` (it is audited). Read the diff (`git diff main...refs/heads/<branch>`) and check it actually does what the
    note asks and stays in scope; a report is not proof. For an enhancement, re-check the five rules yourself; a
-   failed check goes back to the session like a failed test.
+   failed check goes back to the session like a failed test. Check the diff against the area's **Principles**
+   yourself too (not only the report's lines): a broken law goes back like a failed test; a theory the result
+   deviates from without the reason the plan or report gives is a **Warning**.
 2. On main: `git merge --no-ff refs/heads/<branch>`. Resolve `docs/*` and plan/notes-file conflicts yourself. For a code conflict, abort and send it back to the session to rebase on main.
 3. Run every check in **Merge** *(config)*. If one fails, add 1 to the note's `retries`, `git reset --hard ORIG_HEAD` (only your own merge, which you just made) and send the failure back to the session.
 4. Set `status: done` and write **Result**: root cause or what changed, merge commit, the five checks' result
@@ -340,6 +362,12 @@ the plan, planned files never touched) and the "Done when" items met or not. The
 | `merge-retried` | a merge check failed and went back | add the failing check or its cause to **Brief** *(config)* so sessions run it first |
 
 Checks lines: a `SLOW` check suggests a smaller command or a narrower glob; a `WARN` names what was let through.
+
+**Principles evidence.** For a hypothesis the work tested, add the note id to its `for:` or `against:` in the area
+note (this is evidence, not a rule change, so it needs no ask) and commit it with the board. Then run
+`principles.mjs --status`: a `promote?` hypothesis (3+ for, none against) is proposed to the user as a theory, a
+`drop?` one as removed or reworded; a theory or law the result contradicted (with measurements, not a hunch) is
+proposed for revision. Change a principle's kind or wording only on the user's yes.
 When the class's Notlar already held a line about the same trap before this lesson (it came back), propose a
 **Checks** row that would catch it, with a fast command and the mode left for the user to choose; add it only on a yes.
 
@@ -348,7 +376,9 @@ When the class's Notlar already held a line about the same trap before this less
 - read the Notlar of the changed files against the diff: a lesson that describes the behaviour this change replaced
   (an enhancement that redesigns the thing, a decision the user changed) is a candidate, to delete or reword;
 - a `BROKEN` checks line (its script is gone) is a candidate row, and so is any **Brief**, **Known stalls** or **Checks**
-  item that names what the change removed.
+  item that names what the change removed;
+- a principle of the area that the change made untrue (a new need changed the subject: a new kind, a new engine,
+  a decision the user reversed) is a candidate, to reword, demote (law to theory, theory to hypothesis) or delete.
 Put candidates in **Warnings** with the reason, one line each; delete or reword only on the user's yes, and say why in
 the commit message (`Board: retire <rule>: <why>`), so git keeps the record. Never retire a rule on your own.
 

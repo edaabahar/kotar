@@ -36,6 +36,8 @@ Rules that new needs made wrong or that point at code that is gone cost every br
    it); so is a row marked "never caught anything" (10+ runs, no catch: its trap may be gone, or it checks too little)
    and a row whose trap no lesson or bug mentions any more.
 3. **Brief** and **Known stalls** items in `.claude/kotar.md` that name a tool, file or flake that is gone are candidates.
+   So are the area notes' **Principles**: run `node <this skill's directory>/../kotar/scripts/principles.mjs "<areas folder>" --status`;
+   a hypothesis marked `promote?` or `drop?`, and a law or theory that later measurements or a changed need contradict.
 4. Show the user the candidates with the reason for each (and the evidence: the missing name, the audit counts).
    Change nothing before a yes. On a yes, delete or reword the line, and commit with the reason in the message
    (`Board: retire <rule>: <why>`); git history is the record of what was retired and why.
