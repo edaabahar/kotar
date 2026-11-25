@@ -143,12 +143,12 @@ General stalls (any project):
   - session idle with commits reporting finished work: go to step 5 for it.
   - session idle, nothing to show, or gone: read its last report if there is one; set `stuck` with the reason, or re-dispatch if the cause is clearly transient.
 - Finish `merge-pending` notes (step 5).
-- **Clean up** every worktree in `git worktree list` (not the main checkout) whose note is `done` in the vault, or
-  whose branch is merged into main (`git log main..refs/heads/<branch>` is empty) while its note is not `running`,
-  `queued` or `merge-pending` and its session is not running (a fresh worktree has no commits yet, so it looks merged):
-  archive its session (`archive_session`), then from the main checkout `git worktree remove <path>` and
-  `git branch -d <branch>`. Both refuse uncommitted or unmerged work; then leave it and say so in **Warnings**.
-  Never force either.
+- **Clean up** finished worktrees with `node <this skill's directory>/../cleanup/scripts/worktrees.mjs` from the main
+  checkout (`list`, then `remove <paths...>`; the rules are in `/kotar:cleanup`): a worktree whose note is `done` goes
+  (`--unmerged --wip`: its branch and any leftover change are kept as commits), and so does one whose branch is merged
+  into main while its note is not `running`, `queued` or `merge-pending` and its session is not running (a fresh
+  worktree has no commits yet, so it looks merged). Archive each removed worktree's session (`archive_session`). What
+  the script skips or leaves behind goes in **Warnings**.
 
 ## 2. Sort and record each item
 

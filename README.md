@@ -9,6 +9,7 @@ Claude Code plugin: Obsidian task boards for any project. You say what is wrong 
 | `/kotar` | re-reads the board and moves it forward ("check the board") |
 | `/kotar:lessons` | shows the lessons for files, backfills them from done bug notes, proposes checks for traps that keep coming back |
 | `/kotar:index` | rebuilds the code graph notes (one Obsidian note per file; hand-written **Notlar** kept) |
+| `/kotar:cleanup` | removes the worktrees, merged branches and sessions of finished work; lists the rest (unmerged, uncommitted, holding logs) for you to pick; never forces, never deletes an unmerged branch |
 
 Bug: something that exists does not work as it should. Enhancement: something new, or a change to something that works as built; judged on five checks.
 
@@ -66,6 +67,7 @@ claude plugin install kotar@kotar
 - List script test: `node skills/kotar/scripts/board_lists.test.mjs`.
 - Review script test: `node skills/kotar/scripts/review.test.mjs`.
 - Graph tests: `node graph/graph.test.mjs`, `node graph/lang.test.mjs`.
+- Cleanup script test: `node skills/cleanup/scripts/worktrees.test.mjs`.
 - Checks test: `node skills/kotar/scripts/checks.test.mjs`.
 - Principles test: `node skills/kotar/scripts/principles.test.mjs`.
 - Counter test: `node --experimental-strip-types hooks/count.test.mjs`.
