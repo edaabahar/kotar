@@ -143,6 +143,12 @@ General stalls (any project):
   - session idle with commits reporting finished work: go to step 5 for it.
   - session idle, nothing to show, or gone: read its last report if there is one; set `stuck` with the reason, or re-dispatch if the cause is clearly transient.
 - Finish `merge-pending` notes (step 5).
+- **Clean up** every worktree in `git worktree list` (not the main checkout) whose note is `done` in the vault, or
+  whose branch is merged into main (`git log main..refs/heads/<branch>` is empty) while its note is not `running`,
+  `queued` or `merge-pending` and its session is not running (a fresh worktree has no commits yet, so it looks merged):
+  archive its session (`archive_session`), then from the main checkout `git worktree remove <path>` and
+  `git branch -d <branch>`. Both refuse uncommitted or unmerged work; then leave it and say so in **Warnings**.
+  Never force either.
 
 ## 2. Sort and record each item
 
@@ -343,9 +349,7 @@ Re-read **Guidance** first: a new instruction there goes back to the session ins
    line to the note of the class that holds it, on main: graph CLI `note <Class> "<trap>; <what to check> (<ID>)"`
    (the board's language, max 240 chars). Not a changelog: skip it when the fix explains itself. Commit the board and
    the notes folder.
-   **Clean up**: once the note is `done` and its session is idle, archive the session (`archive_session`) and remove
-   its worktree and branch from the main checkout: `git worktree remove <path>` then `git branch -d <branch>`. Both
-   refuse uncommitted or unmerged work; then leave it and say so in **Warnings**. Never force either.
+   **Clean up** its worktree and branch now, as in step 1 (the note is `done`).
 5. Go back to step 3 and start anything this unblocked.
 
 A note you cannot move forward gets `stuck` with the reason in **Result**.
