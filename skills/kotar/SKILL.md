@@ -343,6 +343,9 @@ Re-read **Guidance** first: a new instruction there goes back to the session ins
    line to the note of the class that holds it, on main: graph CLI `note <Class> "<trap>; <what to check> (<ID>)"`
    (the board's language, max 240 chars). Not a changelog: skip it when the fix explains itself. Commit the board and
    the notes folder.
+   **Clean up**: once the note is `done` and its session is idle, archive the session (`archive_session`) and remove
+   its worktree and branch from the main checkout: `git worktree remove <path>` then `git branch -d <branch>`. Both
+   refuse uncommitted or unmerged work; then leave it and say so in **Warnings**. Never force either.
 5. Go back to step 3 and start anything this unblocked.
 
 A note you cannot move forward gets `stuck` with the reason in **Result**.
@@ -392,7 +395,7 @@ future plans find it in step 2b. When the same flag shows up in three `done` not
 Reply briefly: each new note with its number and kind (and for an enhancement the evaluation's
 notable points), what started, what is queued and on what, what merged, what the user must look at or decide.
 Put the extra-check warnings (rule gap and the config's extras) and the **Review** warnings and suggestions of what
-just merged in a separate **Warnings** part, so they are not missed. Offer to archive sessions only after their branches are merged, and only act on a yes.
+just merged in a separate **Warnings** part, so they are not missed. Name the sessions and worktrees step 5 cleaned up, and any it had to leave.
 
 Skipped, timed-out and let-through checks are logged in `<git common dir>/kotar/audit.jsonl`. Do not read it for a
 brief or a report; read it only when the user asks what was skipped (filter by note or branch), or when pruning
