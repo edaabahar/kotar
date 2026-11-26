@@ -138,7 +138,7 @@ export function impact(target, depth = 3) {
 
 export function history(target) {
   const g = buildGraph();
-  const id = target.match(/^(BUG|ENH)-\d+$/i)?.[0].toUpperCase();
+  const id = target.match(/^(BUG|ENH|EXP)-\d+$/i)?.[0].toUpperCase();
   if (id) {
     const files = Object.entries(g.history).filter(([, h]) => h.some((c) => c.ids.includes(id))).map(([f]) => f);
     const commits = [...new Set(Object.values(g.history).flat().filter((c) => c.ids.includes(id)).map((c) => `${c.hash} ${c.date} ${c.subject}`))];
@@ -146,7 +146,7 @@ export function history(target) {
       "files:", ...files.map((f) => `  ${f}${g.byFile[f] ? "  [" + g.byFile[f] + "]" : ""}`)].join("\n");
   }
   const r = resolveSymbol(g, target);
-  if (!r?.cls) return `No class, file or BUG/ENH id "${target}".`;
+  if (!r?.cls) return `No class, file or board id "${target}".`;
   const n = g.nodes[r.cls];
   const hist = g.history[n.file] || [];
   return [`${n.name}  ${n.file}  (${hist.length} commits)`, ...cap(hist.map((h) => `  ${h.hash} ${h.date} ${h.subject}`), 30)].join("\n");
@@ -196,7 +196,7 @@ export function lessons(files) {
 // Code names a lesson mentions: `backticked` spans, snake_case, CamelCase, CONST_CASE and file names.
 const CODE_EXT = /\.(gd|tscn|tres|py|js|jsx|mjs|ts|tsx|json|csv|cfg|godot|toml|ya?ml|sh|css|html)$/;
 export function lessonNames(text) {
-  const body = text.replace(/^-\s*\d{4}-\d{2}-\d{2}:\s*/, "").replace(/^(?:BUG|ENH)-[\d/,\s]+(?:(?:BUG|ENH)-[\d/]+[,\s]*)*:\s*/, "");
+  const body = text.replace(/^-\s*\d{4}-\d{2}-\d{2}:\s*/, "").replace(/^(?:BUG|ENH|EXP)-[\d/,\s]+(?:(?:BUG|ENH|EXP)-[\d/]+[,\s]*)*:\s*/, "");
   const out = new Set();
   // \p{L}: a Turkish word (ihtiyaç) stays one plain word instead of leaving a fragment that looks like code
   for (const m of body.matchAll(/[\p{L}\d_./*<>-]+/gu)) {
@@ -205,7 +205,7 @@ export function lessonNames(text) {
     // a file name stays whole; "mouse_entered/exited" and "PictureBox.fit" are several names
     for (const p of CODE_EXT.test(t) ? [t] : t.split(/[/.]/)) {
       const code = CODE_EXT.test(p) || (/_/.test(p) && /[a-z]/i.test(p) && p.length > 3 && !/_$/.test(p)) || /^[A-Z][a-z0-9]+[A-Z][\w]*$/.test(p);
-      if (code && /^[\w./-]+$/.test(p) && !/^\d|^(BUG|ENH)-/.test(p)) out.add(p);
+      if (code && /^[\w./-]+$/.test(p) && !/^\d|^(BUG|ENH|EXP)-/.test(p)) out.add(p);
     }
   }
   return [...out];

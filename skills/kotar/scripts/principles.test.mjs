@@ -13,7 +13,7 @@ Paths: \`backend/\`
 <!-- - law: an example in a comment is not a principle -->
 - yasa: piksel sanatı tam hücre, en yakın komşu (kaynak: CLAUDE.md)
 - theory: the model follows the prompt body over a closing sentence (evidence: BUG-016, BUG-019)
-- hipotez: kafa kutusu mankenden gelirse tüm açılarda oran ±%10 kalır (lehine: BUG-021, BUG-026, ENH-046; aleyhine: )
+- hipotez: kafa kutusu mankenden gelirse tüm açılarda oran ±%10 kalır (lehine: BUG-021, BUG-026, EXP-046; aleyhine: )
 - hypothesis: a bigger palette keeps face detail (for: BUG-024; against: BUG-027)
 - just a note line, not a principle
 
@@ -22,7 +22,7 @@ Paths: \`backend/\`
 `;
 const ps = parse(md);
 assert.deepEqual(ps.map((p) => p.kind), ['law', 'theory', 'hypothesis', 'hypothesis']);
-assert.deepEqual(ps[2].for, ['BUG-021', 'BUG-026', 'ENH-046']);
+assert.deepEqual(ps[2].for, ['BUG-021', 'BUG-026', 'EXP-046']);
 assert.deepEqual(ps.map(verdict), ['', '', 'promote?', 'drop?']);
 assert.equal(verdict({ kind: 'hypothesis', for: ['BUG-1'], against: [] }), 'open');
 

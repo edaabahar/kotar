@@ -10,7 +10,7 @@ const HELP = `node <kotar>/graph/graph.mjs <command>
   callers <Class.fn|fn> [depth]   who calls it (also signal connections and scene connections)
   callees <Class.fn|fn>    what it calls and emits
   impact <Class|file> [depth]     what depends on it and which tests reference it
-  history <Class|file|BUG-nnn|ENH-nnn>   commits of a class, or files a bug/enhancement changed
+  history <Class|file|BUG-nnn|ENH-nnn|EXP-nnn>   commits of a class, or files a board note changed
   lessons <file...>        the Notlar of these files and who uses them (for a brief)
   dependents <file...>     files that use these files directly, tests included (for checks)
   stale [file...]          lessons whose script or named code is gone (all notes, or these files')

@@ -1,4 +1,4 @@
-// Rebuilds the open/done lists in Bug Board.md and Enhancement Board.md and the Board.canvas overview
+// Rebuilds the open/done lists in Bug Board.md, Enhancement Board.md and Experiment Board.md and the Board.canvas overview
 // from each note's `status`. Run after creating a note or changing a `status`.
 // Usage: node board_lists.mjs <board dir> [vault root]   (vault root defaults to the board dir;
 // canvas file paths are relative to it, which is what Obsidian expects)
@@ -12,6 +12,7 @@ const PREFIX = path.relative(VAULT, ROOT).split(path.sep).filter(Boolean).map((p
 const BOARDS = [
   { dir: 'Bugs', board: 'Bug Board.md', open: 'Open bugs', done: 'Done bugs' },
   { dir: 'Enhancements', board: 'Enhancement Board.md', open: "Open enhancements", done: "Done enhancements" },
+  { dir: 'Experiments', board: 'Experiment Board.md', open: 'Open experiments', done: 'Done experiments' },
 ];
 const COLOR = { stuck: '1', queued: '2', new: '3', 'merge-pending': '5', running: '6' };
 const W = 320, H = 70, GAP = 20, COLS = 3, PAD = 40;

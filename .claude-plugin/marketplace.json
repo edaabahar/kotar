@@ -4,6 +4,6 @@
   "description": "Claude Code workflow plugins.",
   "owner": { "name": "edaabahar" },
   "plugins": [
-    { "name": "kotar", "description": "Obsidian bug & enhancement boards with side sessions and local merges.", "source": "./", "category": "productivity" }
+    { "name": "kotar", "description": "Obsidian bug, enhancement & experiment boards with side sessions and local merges.", "source": "./", "category": "productivity" }
   ]
 }

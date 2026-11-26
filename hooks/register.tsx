@@ -18,7 +18,7 @@ async function refresh($: any): Promise<void> {
     const dir = boardDir(await $.fs.read(`${root}/.claude/kotar.md`))
     if (dir !== undefined) {
       const statuses: string[] = []
-      for (const sub of ['Bugs', 'Enhancements']) {
+      for (const sub of ['Bugs', 'Enhancements', 'Experiments']) {
         const path = `${root}/${dir}/${sub}`.replace(/\/+/g, '/')
         if (!(await $.fs.exists(path))) continue
         for (const f of await $.fs.list(path)) {

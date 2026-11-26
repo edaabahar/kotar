@@ -1,7 +1,7 @@
 {
   "name": "kotar",
-  "version": "0.17.0",
-  "description": "Obsidian bug & enhancement boards: record notes, fix in parallel side sessions, merge into local main. Shows a live task counter.",
+  "version": "0.18.0",
+  "description": "Obsidian bug, enhancement & experiment boards: record notes, fix in parallel side sessions, merge into local main. Shows a live task counter.",
   "hooks": ["./hooks/hooks.json"],
   "mcpServers": {
     "code-graph": { "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/graph/mcp_server.mjs"] }

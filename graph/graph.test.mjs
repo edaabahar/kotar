@@ -37,6 +37,7 @@ assert.match(q.impact("Bus"), /1: Box/);
 assert.match(q.impact("Bus"), /tests \(1\): test\/box_test\.gd/);
 assert.match(q.classInfo("Box"), /keep me/, "notes under an older marker are read");
 assert.match(q.history("BUG-001"), /box\.gd/);
+assert.match(q.history("EXP-009"), /^EXP-009/); // an experiment id is a board id, not a class name
 notes.writeAllNotes(g);
 const note = fs.readFileSync(path.join(dir, "vault/Kod/Box.md"), "utf8");
 assert.match(note, /Kullananlar|Kalıtım/);

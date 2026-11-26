@@ -18,7 +18,7 @@ Report one table: item, state (`ok` / `missing` / `incomplete`), what you would 
 | `main` branch | `refs/heads/main` exists (otherwise name the real default branch) |
 | Clean tree | `git status --short` is empty; list what is dirty |
 | `.claude/kotar.md` | exists; `Board folder` and `Obsidian vault root` are set |
-| Board folder | contains `Bug Board.md`, `Enhancement Board.md`, `Bugs/`, `Enhancements/`, `Areas/General.md` (compare with `templates/vault/`) |
+| Board folder | contains `Bug Board.md`, `Enhancement Board.md`, `Experiment Board.md`, `Bugs/`, `Enhancements/`, `Experiments/`, `Areas/General.md` (compare with `templates/vault/`) |
 | Placeholders | no `<test command>`, `<lint command>` or other `<...>` left in `.claude/kotar.md` |
 | `CLAUDE.md` | exists (only reported; creating it is optional) |
 

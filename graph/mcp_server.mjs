@@ -45,7 +45,7 @@ const TOOLS = [
   },
   {
     name: "graph_history",
-    description: "Commits that changed a class or file, or for a BUG-nnn / ENH-nnn id its board note, commits and the files it changed.",
+    description: "Commits that changed a class or file, or for a BUG-nnn / ENH-nnn / EXP-nnn id its board note, commits and the files it changed.",
     inputSchema: { type: "object", properties: { target: str("Class, res path, or an id like 'BUG-076'.") }, required: ["target"] },
     run: (a) => history(a.target),
   },

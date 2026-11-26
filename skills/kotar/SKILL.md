@@ -1,6 +1,6 @@
 ---
 name: kotar
-description: Project work board - take what the user reports (bugs, improvements, or a mix), sort each item into a bug or an enhancement yourself, record it as an Obsidian note, build it in side sessions (parallel worktrees where they cannot conflict) and merge into local main. Use for "/kotar <what to do>", for "/kotar" alone, and for "check the board" to re-read the board and move it forward.
+description: Project work board - take what the user reports (bugs, improvements, or a mix), sort each item into a bug, an enhancement or an experiment yourself, record it as an Obsidian note, build it in side sessions (parallel worktrees where they cannot conflict) and merge into local main. Use for "/kotar <what to do>", for "/kotar" alone, and for "check the board" to re-read the board and move it forward.
 ---
 
 # Kotar board
@@ -41,8 +41,8 @@ The board always lives inside the project, in the main checkout (never a worktre
    second (the user types the folder). Nothing is created until they answer; a "no" stops the run.
 3. Create the board from this plugin's `templates/` folder (`../../templates/` from this skill's directory).
    Never overwrite a file that already exists:
-   - `templates/vault/*` → the chosen board folder (`Bug Board.md`, `Enhancement Board.md`, `Areas/Genel.md`,
-     empty `Bugs/` and `Enhancements/`; skip the `.gitkeep` files);
+   - `templates/vault/*` → the chosen board folder (`Bug Board.md`, `Enhancement Board.md`, `Experiment Board.md`, `Areas/Genel.md`,
+     empty `Bugs/`, `Enhancements/` and `Experiments/`; skip the `.gitkeep` files);
    - `templates/kotar.md` → `.claude/kotar.md`, with **Board** set to the chosen board folder and vault root.
      Fill **Brief** and **Merge** from what the repo shows (CLAUDE.md / AGENTS.md, package scripts, test and
      lint configs); where unsure, leave the `<...>` placeholder.
@@ -54,10 +54,10 @@ The board always lives inside the project, in the main checkout (never a worktre
 ## Board basics
 
 Notes are written in English. There is no Obsidian MCP: read and write the markdown files directly.
-The board's own `Bug Board.md` / `Enhancement Board.md` rules win over this file if they differ.
+The board's own `Bug Board.md` / `Enhancement Board.md` / `Experiment Board.md` rules win over this file if they differ.
 List script *(config: Board)*: when enabled, whenever you create a note or change its `status`, run
 `node <this skill's directory>/scripts/board_lists.mjs "<board folder>" "<vault root>"`: it rebuilds the
-open/done lists in both board notes and the `Board.canvas` overview. Never edit those lists or the canvas by hand.
+open/done lists in the board notes and the `Board.canvas` overview. Never edit those lists or the canvas by hand.
 Only the main checkout edits the board; side sessions never touch it. After each board change, commit only
 the board from the main checkout *(config: Board, message style)*, so unrelated work is never swept in.
 
@@ -136,11 +136,11 @@ General stalls (any project):
 
 ## 1. Sync with the board (always first)
 
-- Read both board notes and the frontmatter and **Guidance** section of every note in `Bugs/` and
+- Read the board notes and the frontmatter and **Guidance** section of every note in `Bugs/`, `Experiments/` and
   `Enhancements/`. Apply what the user wrote there: changed `priority`, added `blockedBy` entries, instructions.
 - For each `running` note, look up its `session` with `list_sessions` (`include_archived: true`) and its branch with `git log main..refs/heads/<branch>`:
   - session still running: leave it.
-  - session idle with commits reporting finished work: go to step 5 for it.
+  - session idle with commits reporting finished work: go to step 5 for it (an experiment: step 5a).
   - session idle, nothing to show, or gone: read its last report if there is one; set `stuck` with the reason, or re-dispatch if the cause is clearly transient.
 - Finish `merge-pending` notes (step 5).
 - **Clean up** finished worktrees with `node <this skill's directory>/../cleanup/scripts/worktrees.mjs` from the main
@@ -156,6 +156,9 @@ Split the argument into distinct items (one message may hold several). For each,
 
 - **Bug**: something that exists does not work as it should (wrong result, crash, broken layout, regression).
 - **Enhancement**: something new, or a change to behaviour that works as built (a feature, a better flow, a new look).
+- **Experiment**: a trial whose outcome is unknown ("try X", "would Y work", "compare A and B", testing a
+  hypothesis). Its result is a measured answer; its code reaches main only if the user adopts it. It never blocks
+  bugs or enhancements, and its session resolves every conflict with main itself (accepted up front).
 
 Do a short locate pass first (a few Grep/Glob or code-graph calls, no deep debugging, no fixing here); it often
 settles the kind (the code clearly means to do X and does not → bug). When it is still unclear, or the item
@@ -163,10 +166,10 @@ could be either and the choice changes the work (a fix of the current behaviour 
 in one `AskUserQuestion` for all unclear items together, each with a short reason for both readings.
 Record the clear items meanwhile. Never guess on an unclear one.
 
-One note per distinct item. Before creating one, check that no open note (in either folder) already covers it;
+One note per distinct item. Before creating one, check that no open note (in any folder) already covers it;
 if one does, add the new detail to that note instead. Pick the area from `Areas/*.md` (each lists its `Paths`)
-and fill **Files** from the locate pass. `blockedBy` holds wikilinks (`"[[BUG-003 short-title]]"`) to bugs or
-enhancements. Link related notes in the body too, so the graph shows them. Run the list script after creating notes.
+and fill **Files** from the locate pass. `blockedBy` holds wikilinks (`"[[BUG-003 short-title]]"`) to other
+notes; a bug's or enhancement's `blockedBy` never names an experiment. Link related notes in the body too, so the graph shows them. Run the list script after creating notes.
 
 **Bug** → `Bugs/BUG-NNN short-title.md`, NNN = highest existing BUG number + 1, zero padded:
 
@@ -242,8 +245,46 @@ The user's request, in their words (screenshots embedded).
 ## Result
 ```
 
-If you later find a note was sorted wrong (a "bug" turns out to be a missing feature, or the other way), move it
-to the other folder under the next free number of that kind, keep a link from the old name in **Result**, and say so in the report.
+**Experiment** → `Experiments/EXP-NNN short-title.md`, NNN = highest existing EXP number + 1. Fill **Question**
+and **Measure** before it can be planned: what is tried, and what result counts as yes, no or inconclusive (a number,
+a screenshot comparison, a test). When it tests an area hypothesis, name it; the result is evidence for or against.
+
+```markdown
+---
+status: new
+priority: low
+area: General
+size:
+branch:
+session:
+started:
+nudges: 0
+retries: 0
+blockedBy: []
+---
+# EXP-NNN Short title
+
+Area: [[General]] · Board: [[Experiment Board]]
+
+## Question
+The user's idea, in their words, and the hypothesis it tests (if any).
+
+## Measure
+- Yes when:
+- No when:
+
+## Files
+
+## Plan
+
+## Guidance
+
+## Result
+Outcome: supported / contradicted / inconclusive. Adopt: yes (merged) / as an enhancement / no (branch kept).
+```
+
+If you later find a note was sorted wrong (a "bug" turns out to be a missing feature, a trial is really a planned
+change, or the other way), move it to the other folder under the next free number of that kind, keep a link from the old name in **Result**, and say so in the report.
 
 ## 2b. Plan each note (before it can start)
 
@@ -261,7 +302,7 @@ and does not re-plan. Spend a few minutes, not an investigation:
    - *Approach*: 3-5 lines; reuse of existing code or earlier commits named by path or hash; no new abstraction
      unless prior art shows one is needed;
    - *Done when*: checks a person or a test can confirm (a bug: the symptom is gone plus a regression test where the
-     logic allows; an enhancement: the five checks hold);
+     logic allows; an enhancement: the five checks hold; an experiment: the **Measure** is taken and reported);
    - *Risks*: shared files, data or saves that could break, callers of shared code;
    - `size`: `S` (one place, under ~20 min), `M` (a few files, ~1 h), `L` (cross-cutting, ~2 h).
      An `L` is split into several notes chained with `blockedBy`, each `S` or `M`, unless it cannot be split (say why).
@@ -276,17 +317,19 @@ and does not re-plan. Spend a few minutes, not an investigation:
 
 ## 3. Decide what can start
 
-Go through `new` and `queued` notes in both folders, highest `priority` first; at equal `priority` bugs before
-enhancements, then lowest number. A note can start only if all hold:
+Go through `new` and `queued` notes in all folders, highest `priority` first; at equal `priority` bugs before
+enhancements before experiments, then lowest number. A bug or enhancement can start only if all hold:
 
 - it has a **Plan** (step 2b);
 - every note in `blockedBy` is `done`;
-- no `running` note (either folder) has the same `area`;
-- it shares no file in **Files** with a `running` note. Treat the shared files listed in `Bug Board.md`
+- no `running` bug or enhancement has the same `area`;
+- it shares no file in **Files** with a `running` bug or enhancement. Treat the shared files listed in `Bug Board.md`
   ("Conflict rule") as shared across areas, and assume them whenever the work likely touches what they hold
   (enhancements usually do: text, styles, settings, an API or a schema). `docs/*` and board overlap never blocks.
 
-Otherwise set `status: queued` and add the blocking note to `blockedBy`.
+Otherwise set `status: queued` and add the blocking note to `blockedBy`. Running experiments never count here:
+nothing waits for an experiment. An experiment needs only a **Plan** and its `blockedBy` done; it starts even in the
+same area or files as running work, because its conflicts are its own to resolve.
 
 Before dispatching, check `git status` on main. Worktrees branch from HEAD, so uncommitted work would be missing
 from them. Ignore the board (commit it yourself). If main is dirty with anything else other than a merge you are
@@ -311,6 +354,11 @@ The brief must stand alone:
   the plan, stop, commit what is sound and report why instead of widening it;
 - bug: find the root cause in this repo's code; add a regression test where the logic allows it;
 - enhancement: the **Evaluation** and the reference files to read (deviate only with a reason in the report); add tests for new logic;
+- experiment: the **Question** and **Measure**; take the measurement and report it with the evidence (numbers,
+  screenshots, test output). Say plainly that conflicts are yours, accepted up front: real work keeps merging into main
+  while you run and never waits for you. Before the final report (and whenever told main moved), rebase on
+  `refs/heads/main` and resolve every conflict yourself: keep main's behaviour, re-apply the trial on top, rerun the
+  measurement if the rebase touched it. Never ask anyone to hold or change main for you;
 - grep every caller (or use the code graph) before changing shared code;
 - **Lessons** (only with **Code graph** `Languages`): run the graph CLI `lessons <every file in Files>` from the main
   checkout and paste its output into the brief as it is: these traps apply to the files the session will change, and
@@ -329,6 +377,15 @@ The brief must stand alone:
 
 If a report asks a product question, put it in the note's **Guidance** and tell the user; answer factual ones yourself with `SendMessage`.
 
+## 5a. Close an experiment (when its session reports)
+
+An experiment does not go through step 5 by default. Read the report and the diff, check the **Measure** was really
+taken (a report is not proof), then write **Result**: the outcome (`supported`, `contradicted`, `inconclusive`) with
+the numbers, and add the evidence id to the area hypothesis it tested (`for:` / `against:`). Ask the user once:
+adopt the code as is (then it goes through step 5 like an enhancement, with the experiment's session doing any
+rebase), turn it into an enhancement note (linked from **Result**), or keep the branch only. Set `status: done` once
+the answer is written; the worktree is then cleaned up in step 1 and its branch is kept.
+
 ## 5. Merge (when a session reports, or from step 1)
 
 Re-read **Guidance** first: a new instruction there goes back to the session instead of merging. Merge one branch at a time.
@@ -341,7 +398,7 @@ Re-read **Guidance** first: a new instruction there goes back to the session ins
    failed check goes back to the session like a failed test. Check the diff against the area's **Principles**
    yourself too (not only the report's lines): a broken law goes back like a failed test; a theory the result
    deviates from without the reason the plan or report gives is a **Warning**.
-2. On main: `git merge --no-ff refs/heads/<branch>`. Resolve `docs/*` and plan/notes-file conflicts yourself. For a code conflict, abort and send it back to the session to rebase on main.
+2. On main: `git merge --no-ff refs/heads/<branch>`. Resolve `docs/*` and plan/notes-file conflicts yourself. For a code conflict, abort and send it back to the session to rebase on main. A bug or enhancement never waits on, rebases for or is checked against an experiment branch.
 3. Run every check in **Merge** *(config)*. If one fails, add 1 to the note's `retries`, `git reset --hard ORIG_HEAD` (only your own merge, which you just made) and send the failure back to the session.
 4. Set `status: done` and write **Result**: root cause or what changed, merge commit, the five checks' result
    (enhancement), what the user should check. Then add a **Review** (below).
@@ -396,7 +453,7 @@ future plans find it in step 2b. When the same flag shows up in three `done` not
 
 ## 6. Report
 
-Reply briefly: each new note with its number and kind (and for an enhancement the evaluation's
+Reply briefly: each new note with its number and kind (for an enhancement the evaluation's notable points; for an experiment its question and measure),
 notable points), what started, what is queued and on what, what merged, what the user must look at or decide.
 Put the extra-check warnings (rule gap and the config's extras) and the **Review** warnings and suggestions of what
 just merged in a separate **Warnings** part, so they are not missed. Name the sessions and worktrees step 5 cleaned up, and any it had to leave.

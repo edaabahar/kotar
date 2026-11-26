@@ -10,7 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const KIND = { law: 'law', yasa: 'law', theory: 'theory', teori: 'theory', hypothesis: 'hypothesis', hipotez: 'hypothesis' };
-const ids = (s) => (s || '').match(/\b(?:BUG|ENH)-\d+\b/g) || [];
+const ids = (s) => (s || '').match(/\b(?:BUG|ENH|EXP)-\d+\b/g) || [];
 
 export function parse(md) {
   const sec = md.split(/^## (?:Principles|İlkeler|Ilkeler)\s*$/m)[1]?.split(/^## /m)[0] || '';

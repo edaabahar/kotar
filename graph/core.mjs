@@ -9,7 +9,7 @@ import * as js from "./lang/js.mjs";
 import * as python from "./lang/python.mjs";
 
 const ADAPTERS = { gdscript, python, js };
-const ID_RE = /\b(BUG|ENH)-\d+\b/g;
+const ID_RE = /\b(BUG|ENH|EXP)-\d+\b/g;
 
 function git(args, cwd = ROOT) {
   try {
@@ -97,7 +97,7 @@ function boardNotes() {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     if (!e.isDirectory() || path.join(dir, e.name) === notesDir()) continue;
     for (const f of fs.readdirSync(path.join(dir, e.name))) {
-      const m = f.match(/^((?:BUG|ENH)-\d+)\b.*\.md$/);
+      const m = f.match(/^((?:BUG|ENH|EXP)-\d+)\b.*\.md$/);
       if (m && !out[m[1]]) out[m[1]] = f.slice(0, -3);
     }
   }
