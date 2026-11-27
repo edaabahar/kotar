@@ -368,6 +368,12 @@ The brief must stand alone:
   hypothesis the plan names gets evidence: say whether the result supports or contradicts it;
 - **Checks** *(config)*, when there are rows: before the final report, run `node <this skill's directory>/scripts/checks.mjs --note <ID>`
   in the worktree; fix every `FAIL`; list `WARN` and `SLOW` lines in the report (a `SLOW` check was not verified);
+- **Merge rehearsal**, only when this dispatch leaves 2 or more board sessions running at once (count the `running`
+  notes, this one included; experiments count too): before the final report, run the test checks of **Merge**
+  *(config)* in the worktree the way the merge will run them on main (the same suites, in the same order, named in the
+  brief). A failure that also fails on `refs/heads/main` without this branch is reported as pre-existing, with the
+  output, instead of being debugged. Alone, a session skips this: the merge runs those checks anyway, and parallel
+  merges are where an order or timing failure surfaces late and costs a retry;
 - every item in **Brief** *(config)*: project rules files, setup, tests, lint, docs, screenshots;
 - commit on the worktree branch; do not merge, push, or edit the board;
 - final report, short: the "Done when" items one by one (met / not met), any deviation from the plan and why, root cause (bug) or what changed (enhancement), test/build results, the branch name,
