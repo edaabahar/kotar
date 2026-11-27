@@ -23,7 +23,11 @@ const notes = (dir) => fs.readdirSync(`${ROOT}/${dir}`).filter((f) => f.endsWith
   const t = fs.readFileSync(`${ROOT}/${dir}/${f}`, 'utf8');
   const status = t.match(/^status:\s*(\S+)/m), title = t.match(/^# \S+ (.*)$/m);
   if (!status || !title) throw new Error(`${dir}/${f}: missing "status:" or "# ID title" line`);
-  return { dir, file: f, link: f.slice(0, -3), status: status[1], title: title[1] };
+  const needs = (t.match(/^needs:\s*\[([^\]]*)\]/m)?.[1] ?? '').split(',').map((s) => s.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
+  const flags = [...needs.map((r) => `needs ${r}`), ...(/^exclusive:\s*true\b/m.test(t) ? ['runs alone'] : [])];
+  const waiting = t.match(/^waiting:\s*(\S+)/m)?.[1];
+  if (waiting) flags.push(`waiting since ${waiting.slice(0, 16).replace('T', ' ')}`);
+  return { dir, file: f, link: f.slice(0, -3), status: status[1], title: title[1], flags };
 });
 
 const addGroup = (label, items, color) => {
@@ -43,7 +47,7 @@ for (const b of BOARDS) {
   if (!fs.existsSync(`${ROOT}/${b.dir}`) || !fs.existsSync(boardPath)) continue; // a project may have only one board
   const all = notes(b.dir);
   const open = all.filter((n) => n.status !== 'done'), done = all.filter((n) => n.status === 'done');
-  const line = (n) => `- [[${n.link}|${n.link.split(' ')[0]}]] ${n.title}` + (n.status === 'done' ? '' : ` · \`${n.status}\``);
+  const line = (n) => `- [[${n.link}|${n.link.split(' ')[0]}]] ${n.title}` + (n.status === 'done' ? '' : ` · \`${n.status}\`` + n.flags.map((x) => ` · ${x}`).join(''));
   const block = `## ${b.open} (${open.length})\n${open.map(line).join('\n') || '- yok'}\n\n## ${b.done} (${done.length})\n${done.map(line).join('\n')}\n\n`;
   const text = fs.readFileSync(boardPath, 'utf8')
     .replace(new RegExp(`## ${b.open} \\(\\d+\\)[\\s\\S]*?## ${b.done} \\(\\d+\\)[\\s\\S]*?\\n\\n(?=## )`), '')

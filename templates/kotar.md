@@ -28,6 +28,16 @@ This file is the project's `.claude/kotar.md`. `/kotar` reads it first.
 | Check | Mode | Files | Budget | Command |
 |---|---|---|---|---|
 
+## Resources
+<!-- Optional. Machine resources only one session can use at a time. A note names the ones it uses in `needs`; the
+     note that has waited longest for a resource gets it first, and `exclusive: true` runs a note alone. Example rows:
+| editor | the IDE or engine editor, its import or test runner | `tasklist | findstr /i editor` |
+| gpu | model inference, renders, benchmarks | |
+| port 8000 | the dev server | `curl -s localhost:8000` |
+-->
+| Resource | Used by | Free check (optional) |
+|---|---|---|
+
 ## Known stalls
 | Seen | Sign | Cause | Fix to send |
 |---|---|---|---|

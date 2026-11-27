@@ -11,7 +11,7 @@ Claude Code plugin: Obsidian task boards for any project. You say what is wrong 
 | `/kotar:index` | rebuilds the code graph notes (one Obsidian note per file; hand-written **Notlar** kept) |
 | `/kotar:cleanup` | removes the worktrees, merged branches and sessions of finished work; lists the rest (unmerged, uncommitted, holding logs) for you to pick; never forces, never deletes an unmerged branch |
 
-Bug: something that exists does not work as it should. Enhancement: something new, or a change to something that works as built; judged on five checks. Experiment: a trial whose outcome is unknown; it never blocks bugs or enhancements, runs alongside them even in the same files, resolves its own conflicts with main (accepted up front), and its code reaches main only if you adopt it.
+Bug: something that exists does not work as it should. Enhancement: something new, or a change to something that works as built; judged on five checks. Experiment: a trial whose outcome is unknown; it never blocks bugs or enhancements, runs alongside them even in the same files, resolves its own conflicts with main (accepted up front), and its code reaches main only if you adopt it. A note can also carry flags: `needs` (machine resources only one session can use at a time, e.g. an editor, a device, a port) and `exclusive` (runs alone); the note that has waited longest for a resource goes first, and the board lists show the flags.
 
 How a task goes:
 1. **Record**: each item becomes a note (bug or enhancement) on the board.

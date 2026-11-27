@@ -15,6 +15,9 @@ Graph: every note links its area and the notes it depends on with `[[link]]`. Im
 - Shared files (they queue work even across areas): <list them here>
 - `docs/*` and board overlap never block anything.
 - Running enhancements follow the same rule; at equal priority bugs go first.
+- Machine resources (one session at a time: a tool, device, port, GPU, server) are a note's `needs`; the note that has
+  waited longest for a resource gets it first, whatever its priority. `exclusive: true` runs a note alone: new work
+  waits, running work finishes first.
 - Experiments never block: bugs and enhancements start and merge as if no experiment were running, and an experiment
   runs alongside anything. Its session accepts up front that it resolves every conflict with main itself.
 

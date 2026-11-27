@@ -21,6 +21,8 @@ Its sections fill in the gaps marked *(config)* below:
 - **Code graph** (optional): `Languages` turns on kotar's built-in graph (the `code-graph` MCP tools; per-file notes
   rebuilt with `/kotar:index`); otherwise a tool or command for callers and dependents of files (used only when planning, step 2b).
   The per-file notes' **Notlar** are the repo's own lessons; kotar itself holds none.
+- **Resources** (optional): machine resources only one session can use at a time (a tool or editor, a device, a
+  port, a GPU, a shared server), with an optional command that tells whether one is free; notes name them in `needs`.
 - **Checks** (optional): micro checks, one table row each: name, mode (`block` stops the merge, `warn` only
   reports; the user picks), file globs, time budget in seconds, command (`{files}` = the matching files). They run
   only on the changed files and the files that use them (`scripts/checks.mjs`).
@@ -133,6 +135,7 @@ General stalls (any project):
 | rebase conflicts at merge | worktree cut from stale `origin/main` | the brief's first step (`git reset --hard refs/heads/main`); a worktree with work already: rebase on `refs/heads/main` |
 | one test fails in a full run, passes alone | a known order-dependent or timing flake | rerun it alone; when it passes, report it as the flake instead of debugging it |
 | session idle, last message a question | it waits on an answer or a permission | answer a factual question with `SendMessage`; a product question goes to **Guidance** and the user |
+| session waits for a tool, device, port or server to be free | another session holds a machine resource | add it to both notes' `needs` (and to **Resources** *(config)* if new); the note with the older `waiting` (else the earlier `started`) keeps it, tell the other session to commit and stop, and set that note `queued` |
 
 ## 1. Sync with the board (always first)
 
@@ -185,6 +188,9 @@ started:
 nudges: 0
 retries: 0
 blockedBy: []
+needs: []
+exclusive: false
+waiting:
 ---
 # BUG-NNN Short title
 
@@ -219,6 +225,9 @@ started:
 nudges: 0
 retries: 0
 blockedBy: []
+needs: []
+exclusive: false
+waiting:
 ---
 # ENH-NNN Short title
 
@@ -261,6 +270,9 @@ started:
 nudges: 0
 retries: 0
 blockedBy: []
+needs: []
+exclusive: false
+waiting:
 ---
 # EXP-NNN Short title
 
@@ -304,6 +316,10 @@ and does not re-plan. Spend a few minutes, not an investigation:
    - *Done when*: checks a person or a test can confirm (a bug: the symptom is gone plus a regression test where the
      logic allows; an enhancement: the five checks hold; an experiment: the **Measure** is taken and reported);
    - *Risks*: shared files, data or saves that could break, callers of shared code;
+   - flags: `needs` lists the machine resources the work uses that only one session can use at a time (the names in
+     **Resources** *(config)*: a tool or editor, a device, a port, a GPU, a shared server or database);
+     `exclusive: true` when it must run alone (a heavy build, a full test run or a benchmark other work would slow or
+     disturb, or the user says so);
    - `size`: `S` (one place, under ~20 min), `M` (a few files, ~1 h), `L` (cross-cutting, ~2 h).
      An `L` is split into several notes chained with `blockedBy`, each `S` or `M`, unless it cannot be split (say why).
 3. **Principles.** Run `principles.mjs` for the note's area. The *Approach* must keep every law and follow the
@@ -325,11 +341,24 @@ enhancements before experiments, then lowest number. A bug or enhancement can st
 - no `running` bug or enhancement has the same `area`;
 - it shares no file in **Files** with a `running` bug or enhancement. Treat the shared files listed in `Bug Board.md`
   ("Conflict rule") as shared across areas, and assume them whenever the work likely touches what they hold
-  (enhancements usually do: text, styles, settings, an API or a schema). `docs/*` and board overlap never blocks.
+  (enhancements usually do: text, styles, settings, an API or a schema). `docs/*` and board overlap never blocks;
+- every resource in its `needs` is free: no `running` note needs it, and no note with an older `waiting` that needs
+  it is otherwise ready to start (it would jump the queue);
+- no `running` note is `exclusive`, and no `exclusive` note with an older `waiting` is otherwise ready.
 
-Otherwise set `status: queued` and add the blocking note to `blockedBy`. Running experiments never count here:
-nothing waits for an experiment. An experiment needs only a **Plan** and its `blockedBy` done; it starts even in the
-same area or files as running work, because its conflicts are its own to resolve.
+Otherwise set `status: queued` and add the blocking note to `blockedBy` (a resource or an `exclusive` note blocks
+without a `blockedBy` entry). Running experiments never count here: nothing waits for an experiment. An experiment
+needs only a **Plan** and its `blockedBy` done; it starts even in the same area or files as running work, because its
+conflicts are its own to resolve.
+
+**Waiting order.** When a note is ready except for a resource or an `exclusive` note, write the current time into its
+`waiting` once and keep it until it starts. For a resource, the oldest `waiting` goes first whatever the `priority`
+(`priority` orders only notes that wait for nothing); the user can change that in **Guidance**. An `exclusive` note
+that is the oldest ready one stops new dispatches: let the running notes finish (drain, experiments included), then
+run it alone; start the others again after it merges. An experiment never takes a resource from real work: it
+starts with `needs` only when no bug or enhancement needs that resource (running or waiting); when one comes to
+need a resource a running experiment holds, tell the experiment's session to commit and release it. An `exclusive`
+experiment waits until nothing else is running or waiting.
 
 Before dispatching, check `git status` on main. Worktrees branch from HEAD, so uncommitted work would be missing
 from them. Ignore the board (commit it yourself). If main is dirty with anything else other than a merge you are
@@ -337,7 +366,7 @@ finishing, leave the notes `queued` and tell the user what is uncommitted; do no
 
 ## 4. Dispatch
 
-Re-read the note's **Guidance** right before starting. Load `mcp__ccd_session__start_session` with ToolSearch if needed, then start one session per note: `initiation: "user_asked"`, `context: "fresh"`, `use_worktree: true`. Set the note to `status: running`, fill `session` with the `local_…` id and `branch` when known, and `started` with the current time (ISO 8601, `date -u +%FT%TZ`).
+Re-read the note's **Guidance** right before starting. Load `mcp__ccd_session__start_session` with ToolSearch if needed, then start one session per note: `initiation: "user_asked"`, `context: "fresh"`, `use_worktree: true`. Set the note to `status: running`, fill `session` with the `local_…` id and `branch` when known, and `started` with the current time (ISO 8601, `date -u +%FT%TZ`); clear `waiting`.
 
 The brief must stand alone:
 
@@ -375,6 +404,8 @@ The brief must stand alone:
   output, instead of being debugged. Alone, a session skips this: the merge runs those checks anyway, and parallel
   merges are where an order or timing failure surfaces late and costs a retry;
 - every item in **Brief** *(config)*: project rules files, setup, tests, lint, docs, screenshots;
+- the note's `needs`, when set: the session may use those resources; finding any other one busy, it commits and reports
+  instead of waiting for it, and for `exclusive` it is told it runs alone;
 - commit on the worktree branch; do not merge, push, or edit the board;
 - final report, short: the "Done when" items one by one (met / not met), any deviation from the plan and why, root cause (bug) or what changed (enhancement), test/build results, the branch name,
   what only a person can verify; for an enhancement also the five checks redone on the result (one line each) and the extra checks;
