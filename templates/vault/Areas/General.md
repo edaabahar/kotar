@@ -12,3 +12,9 @@ Everything not split out yet. As the project grows, add area notes (`Areas/<Name
 - theory: <explains and predicts; the approach follows it, a deviation needs a reason> (evidence: BUG-012, ENH-004)
 - hypothesis: <believed, not proven; each task that touches it adds evidence> (for: ; against: )
 -->
+
+## Tests
+<!-- The test files that cover this area, one line each. Kotar picks the tests a plan runs from here and adds every
+     new test file at merge.
+- `test/test_example.py` — what it covers (BUG-012, ENH-004)
+-->

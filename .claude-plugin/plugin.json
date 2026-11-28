@@ -1,6 +1,6 @@
 {
   "name": "kotar",
-  "version": "0.20.0",
+  "version": "0.21.0",
   "description": "Obsidian bug, enhancement & experiment boards: record notes, fix in parallel side sessions, merge into local main. Shows a live task counter.",
   "hooks": ["./hooks/hooks.json"],
   "mcpServers": {

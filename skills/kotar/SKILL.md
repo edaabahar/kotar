@@ -203,6 +203,11 @@ The user's report, in their words. A screenshot they gave: save it next to the n
 
 ## Plan
 
+## Tests
+- Run:
+- New:
+- Results:
+
 ## Guidance
 
 ## Result
@@ -249,6 +254,11 @@ The user's request, in their words (screenshots embedded).
 
 ## Plan
 
+## Tests
+- Run:
+- New:
+- Results:
+
 ## Guidance
 
 ## Result
@@ -289,6 +299,11 @@ The user's idea, in their words, and the hypothesis it tests (if any).
 
 ## Plan
 
+## Tests
+- Run:
+- New:
+- Results:
+
 ## Guidance
 
 ## Result
@@ -315,6 +330,16 @@ and does not re-plan. Spend a few minutes, not an investigation:
      unless prior art shows one is needed;
    - *Done when*: checks a person or a test can confirm (a bug: the symptom is gone plus a regression test where the
      logic allows; an enhancement: the five checks hold; an experiment: the **Measure** is taken and reported);
+   - **Tests** (the test strategy, decided here, not by the session):
+     - *Run*: the existing tests that cover the change, with the command for each, narrowest first. Find them from
+       the graph CLI `impact <file>` (its `tests` line), the area note's `## Tests`, and test files named after the
+       changed ones. Add the scope and why: these tests only (one place), the area's suite (shared code in the area),
+       or a full run (shared code with many dependents, a schema or save format). Do not add what **Merge** *(config)*
+       runs anyway; say "Merge runs the rest";
+     - *New*: each test to write, with its file path and the one thing it asserts (a bug: a test that reproduces the
+       symptom and fails before the fix; an enhancement: the new logic and its edge cases; an experiment: the
+       **Measure**, when a test can take it). Or `none: <why>` (visual only, config, docs, no logic a test can reach);
+       the "Done when" names these tests;
    - *Risks*: shared files, data or saves that could break, callers of shared code;
    - flags: `needs` lists the machine resources the work uses that only one session can use at a time (the names in
      **Resources** *(config)*: a tool or editor, a device, a port, a GPU, a shared server or database);
@@ -381,8 +406,12 @@ The brief must stand alone:
 - the **Plan** and **Files**, copied in full: stay inside the scope, follow the approach, reuse what it names. Do not
   widen the scope and do not go exploring the codebase beyond what the plan needs. If the work cannot be done inside
   the plan, stop, commit what is sound and report why instead of widening it;
-- bug: find the root cause in this repo's code; add a regression test where the logic allows it;
-- enhancement: the **Evaluation** and the reference files to read (deviate only with a reason in the report); add tests for new logic;
+- the **Tests** section, copied in full: run every *Run* line and write every *New* test as planned (a bug's new test
+  must fail before the fix and pass after; show both). Do not widen the test scope; a planned test that turns out
+  impossible or pointless is reported with the reason, not silently dropped. A failure in a *Run* test that also fails
+  on `refs/heads/main` is reported as pre-existing, with the output;
+- bug: find the root cause in this repo's code;
+- enhancement: the **Evaluation** and the reference files to read (deviate only with a reason in the report);
 - experiment: the **Question** and **Measure**; take the measurement and report it with the evidence (numbers,
   screenshots, test output). Say plainly that conflicts are yours, accepted up front: real work keeps merging into main
   while you run and never waits for you. Before the final report (and whenever told main moved), rebase on
@@ -407,7 +436,7 @@ The brief must stand alone:
 - the note's `needs`, when set: the session may use those resources; finding any other one busy, it commits and reports
   instead of waiting for it, and for `exclusive` it is told it runs alone;
 - commit on the worktree branch; do not merge, push, or edit the board;
-- final report, short: the "Done when" items one by one (met / not met), any deviation from the plan and why, root cause (bug) or what changed (enhancement), test/build results, the branch name,
+- final report, short: the "Done when" items one by one (met / not met), any deviation from the plan and why, root cause (bug) or what changed (enhancement), each **Tests** line (passed / failed / not run and why, counts) and every new test file, build results, the branch name,
   what only a person can verify; for an enhancement also the five checks redone on the result (one line each) and the extra checks;
   the principles that bind it, one line each: law kept / broken, theory followed / deviated (why), hypothesis
   supported / contradicted / not tested (with the measurement).
@@ -431,14 +460,19 @@ Re-read **Guidance** first: a new instruction there goes back to the session ins
    (before merging) and keep its output for step 4. With **Checks** rows, also run `node <this skill's directory>/scripts/checks.mjs --note <ID>`
    with the branch's worktree as working directory (`git worktree list`): a `FAIL` goes back to the session like a failed
    test. Skip a check only when the user says so for this note: `--skip <check>=<their reason>` (it is audited). Read the diff (`git diff main...refs/heads/<branch>`) and check it actually does what the
-   note asks and stays in scope; a report is not proof. For an enhancement, re-check the five rules yourself; a
+   note asks and stays in scope; a report is not proof. Every *New* test of **Tests** must be in the diff and assert
+   what the plan says; a missing one goes back like a failed test unless the report's reason holds (then write it in
+   **Tests**). For an enhancement, re-check the five rules yourself; a
    failed check goes back to the session like a failed test. Check the diff against the area's **Principles**
    yourself too (not only the report's lines): a broken law goes back like a failed test; a theory the result
    deviates from without the reason the plan or report gives is a **Warning**.
 2. On main: `git merge --no-ff refs/heads/<branch>`. Resolve `docs/*` and plan/notes-file conflicts yourself. For a code conflict, abort and send it back to the session to rebase on main. A bug or enhancement never waits on, rebases for or is checked against an experiment branch.
 3. Run every check in **Merge** *(config)*. If one fails, add 1 to the note's `retries`, `git reset --hard ORIG_HEAD` (only your own merge, which you just made) and send the failure back to the session.
 4. Set `status: done` and write **Result**: root cause or what changed, merge commit, the five checks' result
-   (enhancement), what the user should check. Then add a **Review** (below).
+   (enhancement), what the user should check. Fill **Tests** `Results:`: each test line passed / failed / not run, with
+   counts, and the merge checks' result. Add every new test file to the area note's `## Tests` (one line each:
+   `` `path` — what it covers (ID) ``; a file already listed gets the ID added), so later plans find it. Then add a
+   **Review** (below).
    **Lesson** (bug, with **Code graph** `Languages`): when the root cause is a trap the code does not show, add one
    line to the note of the class that holds it, on main: graph CLI `note <Class> "<trap>; <what to check> (<ID>)"`
    (the board's language, max 240 chars). Not a changelog: skip it when the fix explains itself. Commit the board and
